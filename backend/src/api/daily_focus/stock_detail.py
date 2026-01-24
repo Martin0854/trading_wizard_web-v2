@@ -5,9 +5,11 @@ GET /api/daily-focus/stock/{symbol} - Get detailed stock analysis
 
 import re
 
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.src.db.database import get_db
 from backend.src.services.signal_scanner import get_stock_detail
 
 from .schemas import (
@@ -56,11 +58,13 @@ class StockDetailResponse(BaseModel):
     }
 )
 async def get_stock_analysis(
-    symbol: str = Path(..., description="Stock symbol (e.g., 005930.KS)")
+    symbol: str = Path(..., description="Stock symbol (e.g., 005930.KS)"),
+    db: AsyncSession = Depends(get_db),
 ) -> StockDetailResponse:
     """Get detailed technical analysis for a specific stock.
 
     Returns all technical indicators and buy recommendation status if applicable.
+    Uses two-tier caching (Redis + PostgreSQL) to minimize yfinance API calls.
     """
     # Validate symbol format
     if not SYMBOL_PATTERN.match(symbol):
@@ -72,7 +76,7 @@ async def get_stock_analysis(
             },
         )
 
-    result = await get_stock_detail(symbol)
+    result = await get_stock_detail(symbol, db_session=db)
 
     if result is None:
         raise HTTPException(

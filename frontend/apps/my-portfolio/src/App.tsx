@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Header, Footer } from '@trading-wizard/shared-ui/components';
+import { Header, Footer, SessionGuard } from '@trading-wizard/shared-ui/components';
 import type { NavLink } from '@trading-wizard/shared-ui/components';
+import { getPortalUrl, getDailyFocusUrl } from '@trading-wizard/shared-ui/services';
 import PortfolioPage from './pages/PortfolioPage';
 import SettingsPage from './pages/SettingsPage';
 import { usePortfolioStore } from './store/portfolioStore';
@@ -22,7 +23,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     },
     {
       label: 'Daily Focus',
-      href: import.meta.env.VITE_DAILY_FOCUS_URL || 'http://localhost:3001',
+      href: getDailyFocusUrl(),
+      active: false,
+    },
+    {
+      label: '포털',
+      href: getPortalUrl(),
       active: false,
     },
   ];
@@ -44,27 +50,29 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/portfolio" replace />} />
-        <Route
-          path="/portfolio"
-          element={
-            <AppLayout>
-              <PortfolioPage />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <AppLayout>
-              <SettingsPage />
-            </AppLayout>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <SessionGuard>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/portfolio" replace />} />
+          <Route
+            path="/portfolio"
+            element={
+              <AppLayout>
+                <PortfolioPage />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <AppLayout>
+                <SettingsPage />
+              </AppLayout>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </SessionGuard>
   );
 }
 

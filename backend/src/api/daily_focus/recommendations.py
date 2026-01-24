@@ -5,9 +5,11 @@ GET /api/daily-focus/recommendations - Get buy recommendations
 
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.src.db.database import get_db
 from backend.src.services.signal_scanner import scan_for_buy_signals
 
 from .schemas import (
@@ -52,16 +54,19 @@ async def get_recommendations(
     confidence_threshold: float = Query(55.0, ge=0, le=100, alias="confidence_threshold"),
     bollinger_period: int = Query(12, ge=5, le=50, alias="bollinger_period"),
     bollinger_std_dev: float = Query(1.3, ge=0.5, le=3.0, alias="bollinger_std_dev"),
+    db: AsyncSession = Depends(get_db),
 ) -> RecommendationsListResponse:
     """Get buy recommendations based on Bollinger Band squeeze strategy.
 
     Scans KOSPI Top 100 stocks and returns recommendations sorted by confidence score.
+    Uses two-tier caching (Redis + PostgreSQL) to minimize yfinance API calls.
     """
     try:
         result = await scan_for_buy_signals(
             confidence_threshold=confidence_threshold,
             bollinger_period=bollinger_period,
             bollinger_std_dev=bollinger_std_dev,
+            db_session=db,
         )
 
         recommendations = []

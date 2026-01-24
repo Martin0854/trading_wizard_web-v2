@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: trading-wizard
+
+resources:
+  - namespace.yaml
+  - base/configmap.yaml
+  - base/redis.yaml
+  - base/postgres.yaml
+  - base/backend.yaml
+  - base/portal.yaml
+  - base/daily-focus.yaml
+  - base/my-portfolio.yaml
+  - istio/certificate.yaml
+  - istio/gateway.yaml
+  - istio/virtualservice.yaml

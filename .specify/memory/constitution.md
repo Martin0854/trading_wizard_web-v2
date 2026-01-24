@@ -1,20 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.0.0 → 1.0.0
-Bump rationale: Initial constitution creation (MAJOR)
+Version change: 1.0.0 → 1.1.0
+Bump rationale: MVP scope exception for Backtesting Validation; User choice option for Graceful Degradation (MINOR)
 
-Modified principles: N/A (initial creation)
-Added sections:
-  - Core Principles (I. Code Quality, II. Algorithm Integrity, III. API Rate Limit Protection)
-  - Data Integrity Standards
-  - Development Workflow
-  - Governance
+Modified principles:
+  - II. Algorithm Integrity: Added MVP scope exception for Backtesting Validation
+  - III. API Rate Limit Protection: Added user choice option for Graceful Degradation
+
+Previous version: 1.0.0
 
 Templates requiring updates:
-  - .specify/templates/plan-template.md: ✅ No changes needed (Constitution Check section already present)
-  - .specify/templates/spec-template.md: ✅ No changes needed (generic template)
-  - .specify/templates/tasks-template.md: ✅ No changes needed (generic template)
+  - .specify/templates/plan-template.md: ✅ No changes needed
+  - .specify/templates/spec-template.md: ✅ No changes needed
+  - .specify/templates/tasks-template.md: ✅ No changes needed
 
 Follow-up TODOs: None
 ==================
@@ -41,7 +40,7 @@ All trading signal calculations MUST be verifiable, reproducible, and accurately
 
 - **No Magic Numbers**: All indicator parameters (Bollinger period=12, std_dev=1.3, RSI period=14, etc.) MUST be configurable constants, not hardcoded inline
 - **Calculation Transparency**: The confidence score formula and signal conditions MUST match documentation exactly; any change requires updating TRADING_STRATEGY_ALGORITHM.md
-- **Backtesting Validation**: New signal logic or parameter changes MUST be validated through backtesting before deployment
+- **Backtesting Validation**: New signal logic or parameter changes MUST be validated through backtesting before production deployment. MVP releases MAY defer backtesting with explicit documentation and user acknowledgment of unvalidated signals
 - **No Financial Advice**: System output MUST be framed as "signals" or "indicators", never as "recommendations to buy/sell"; disclaimers MUST be visible
 
 **Rationale**: Users rely on algorithmic signals for trading decisions. Discrepancies between documented and actual behavior erode trust. Transparency ensures users understand exactly what they're getting.
@@ -53,7 +52,7 @@ All external data fetching MUST implement rate limiting and caching to prevent A
 - **Caching First**: Stock price data MUST be cached; re-fetch only when cache is stale (default: 30 minutes for real-time, 24 hours for historical)
 - **Request Throttling**: API calls MUST be throttled to stay within provider limits (yfinance: max 2000 requests/hour recommended)
 - **Batch Processing**: When scanning multiple stocks, requests MUST be batched with delays between batches
-- **Graceful Degradation**: If rate-limited, system MUST use cached data and inform users rather than failing silently
+- **Graceful Degradation**: If rate-limited, system MUST inform users clearly. Cache fallback is RECOMMENDED but MAY be omitted if the user explicitly chooses error-only behavior during specification clarification
 
 **Rationale**: yfinance and other data providers will block IPs that exceed rate limits. A blocked IP means zero functionality for all users. Caching also improves performance and reduces unnecessary network calls.
 
@@ -93,4 +92,4 @@ This constitution governs all development decisions for Trading Wizard Web:
 - **Compliance Review**: All PRs MUST verify compliance with applicable principles; reviewers MUST check the Constitution Check section in implementation plans
 - **Conflict Resolution**: Constitution supersedes other documentation in case of conflict
 
-**Version**: 1.0.0 | **Ratified**: 2026-01-24 | **Last Amended**: 2026-01-24
+**Version**: 1.1.0 | **Ratified**: 2026-01-24 | **Last Amended**: 2026-01-24

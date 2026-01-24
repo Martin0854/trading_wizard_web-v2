@@ -1,0 +1,71 @@
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Header, Footer } from '@trading-wizard/shared-ui/components';
+import type { NavLink } from '@trading-wizard/shared-ui/components';
+import PortfolioPage from './pages/PortfolioPage';
+import SettingsPage from './pages/SettingsPage';
+import { usePortfolioStore } from './store/portfolioStore';
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const { lastUpdated } = usePortfolioStore();
+
+  const navLinks: NavLink[] = [
+    {
+      label: '포트폴리오',
+      href: '/portfolio',
+      active: location.pathname === '/portfolio',
+    },
+    {
+      label: '설정',
+      href: '/settings',
+      active: location.pathname === '/settings',
+    },
+    {
+      label: 'Daily Focus',
+      href: import.meta.env.VITE_DAILY_FOCUS_URL || 'http://localhost:3001',
+      active: false,
+    },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Header
+        title="My Portfolio"
+        navLinks={navLinks}
+        dataFreshness={lastUpdated ?? undefined}
+      />
+      <main style={{ flex: 1 }}>
+        {children}
+      </main>
+      <Footer disclaimer="본 서비스에서 제공하는 매도 신호는 투자 참고용이며, 매매 권유가 아닙니다. 투자에 대한 최종 결정과 책임은 이용자 본인에게 있습니다." />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/portfolio" replace />} />
+        <Route
+          path="/portfolio"
+          element={
+            <AppLayout>
+              <PortfolioPage />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <AppLayout>
+              <SettingsPage />
+            </AppLayout>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

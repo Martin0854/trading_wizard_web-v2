@@ -85,5 +85,5 @@ excluded_tools: []
 # (contrary to the memories, which are loaded on demand).
 initial_prompt: ""
 
-project_name: "daily-focus_188da3ef0a1db030"
+project_name: "my-portfolio_188da3f9a704ae58"
 included_optional_tools: []

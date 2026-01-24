@@ -29,11 +29,11 @@ My Portfolio Wizard는 보유 종목 관리 및 매도 추천 시스템입니다
 ### Goal
 My Portfolio 프론트엔드 앱 초기화
 
-- [ ] MP-T001 Initialize Vite React app in frontend/apps/my-portfolio/
-- [ ] MP-T002 Configure vite.config.ts with port 3002 and shared-ui alias in frontend/apps/my-portfolio/vite.config.ts
-- [ ] MP-T003 Install dependencies (react-query, zustand, axios, uuid) in frontend/apps/my-portfolio/package.json
-- [ ] MP-T004 Create basic App.tsx with router setup in frontend/apps/my-portfolio/src/App.tsx
-- [ ] MP-T005 Create environment configuration in frontend/apps/my-portfolio/.env (API_URL=http://localhost:8000)
+- [x] MP-T001 Initialize Vite React app in frontend/apps/my-portfolio/
+- [x] MP-T002 Configure vite.config.ts with port 3002 and shared-ui alias in frontend/apps/my-portfolio/vite.config.ts
+- [x] MP-T003 Install dependencies (react-query, zustand, axios, uuid) in frontend/apps/my-portfolio/package.json
+- [x] MP-T004 Create basic App.tsx with router setup in frontend/apps/my-portfolio/src/App.tsx
+- [x] MP-T005 Create environment configuration in frontend/apps/my-portfolio/.env (API_URL=http://localhost:8000)
 
 ---
 
@@ -47,25 +47,25 @@ My Portfolio Wizard에서 종목을 추가하고, 매수가/수량을 입력한 
 
 ### Backend Tasks
 
-- [ ] MP-T006 [US2] Create sell signal service in backend/src/services/sell_signal.py (stop_loss, take_profit, trend_break)
-- [ ] MP-T007 [US2] Implement POST /api/portfolio/sell-signals endpoint in backend/src/api/portfolio/sell_signals.py
-- [ ] MP-T008 [US2] Create PnL calculator service in backend/src/services/pnl_calculator.py (position-level and portfolio-level)
-- [ ] MP-T009 [US2] Implement POST /api/portfolio/calculate-pnl endpoint in backend/src/api/portfolio/calculate_pnl.py
+- [x] MP-T006 [US2] Create sell signal service in backend/src/services/sell_signal.py (stop_loss, take_profit, trend_break)
+- [x] MP-T007 [US2] Implement POST /api/portfolio/sell-signals endpoint in backend/src/api/portfolio/sell_signals.py
+- [x] MP-T008 [US2] Create PnL calculator service in backend/src/services/pnl_calculator.py (position-level and portfolio-level)
+- [x] MP-T009 [US2] Implement POST /api/portfolio/calculate-pnl endpoint in backend/src/api/portfolio/calculate_pnl.py
 
 ### Frontend Tasks
 
-- [ ] MP-T010 [US2] Create API client in frontend/apps/my-portfolio/src/services/api.ts (fetchSellSignals, calculatePnL, searchStocks)
-- [ ] MP-T011 [US2] Create Zustand store in frontend/apps/my-portfolio/src/store/portfolioStore.ts (positions, history, loading, error)
-- [ ] MP-T012 [US2] Create PositionList component in frontend/apps/my-portfolio/src/components/PositionList.tsx
-- [ ] MP-T013 [US2] Create PositionCard component in frontend/apps/my-portfolio/src/components/PositionCard.tsx (stock info, pnl, sell signals)
-- [ ] MP-T014 [US2] Create AddPositionModal component in frontend/apps/my-portfolio/src/components/AddPositionModal.tsx
-- [ ] MP-T015 [US2] Create StockSearchInput component in frontend/apps/my-portfolio/src/components/StockSearchInput.tsx (autocomplete)
-- [ ] MP-T016 [US2] Create BuyForm component in frontend/apps/my-portfolio/src/components/BuyForm.tsx (price, quantity, date inputs)
-- [ ] MP-T017 [US2] Create SellModal component in frontend/apps/my-portfolio/src/components/SellModal.tsx (sell price, date, quantity)
-- [ ] MP-T018 [US2] Create average buy price calculator in frontend/apps/my-portfolio/src/utils/priceCalculator.ts
-- [ ] MP-T019 [US2] Create PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx (integrates PositionList)
-- [ ] MP-T020 [US2] Add loading spinner and error handling to PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
-- [ ] MP-T021 [US2] Create EmptyState component in frontend/apps/my-portfolio/src/components/EmptyState.tsx ("보유 종목이 없습니다")
+- [x] MP-T010 [US2] Create API client in frontend/apps/my-portfolio/src/services/api.ts (fetchSellSignals, calculatePnL, searchStocks)
+- [x] MP-T011 [US2] Create Zustand store in frontend/apps/my-portfolio/src/store/portfolioStore.ts (positions, history, loading, error)
+- [x] MP-T012 [US2] Create PositionList component in frontend/apps/my-portfolio/src/components/PositionList.tsx
+- [x] MP-T013 [US2] Create PositionCard component in frontend/apps/my-portfolio/src/components/PositionCard.tsx (stock info, pnl, sell signals)
+- [x] MP-T014 [US2] Create AddPositionModal component in frontend/apps/my-portfolio/src/components/AddPositionModal.tsx
+- [x] MP-T015 [US2] Create StockSearchInput component in frontend/apps/my-portfolio/src/components/StockSearchInput.tsx (autocomplete)
+- [x] MP-T016 [US2] Create BuyForm component in frontend/apps/my-portfolio/src/components/BuyForm.tsx (price, quantity, date inputs)
+- [x] MP-T017 [US2] Create SellModal component in frontend/apps/my-portfolio/src/components/SellModal.tsx (sell price, date, quantity)
+- [x] MP-T018 [US2] Create average buy price calculator in frontend/apps/my-portfolio/src/utils/priceCalculator.ts
+- [x] MP-T019 [US2] Create PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx (integrates PositionList)
+- [x] MP-T020 [US2] Add loading spinner and error handling to PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
+- [x] MP-T021 [US2] Create EmptyState component in frontend/apps/my-portfolio/src/components/EmptyState.tsx ("보유 종목이 없습니다")
 
 ---
 
@@ -79,11 +79,11 @@ My Portfolio Wizard에서 종목을 추가하고, 매수가/수량을 입력한 
 
 ### Frontend Tasks
 
-- [ ] MP-T022 [US3] Create SellSignalBadge component in frontend/apps/my-portfolio/src/components/SellSignalBadge.tsx (stop_loss, take_profit, trend_break)
-- [ ] MP-T023 [US3] Create SellSignalList component in frontend/apps/my-portfolio/src/components/SellSignalList.tsx (all active signals)
-- [ ] MP-T024 [US3] Create SellSignalDetailModal component in frontend/apps/my-portfolio/src/components/SellSignalDetailModal.tsx (signal reason, indicators)
-- [ ] MP-T025 [US3] Integrate sell signals into PositionCard in frontend/apps/my-portfolio/src/components/PositionCard.tsx
-- [ ] MP-T026 [US3] Add sell signal refresh on portfolio load in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
+- [x] MP-T022 [US3] Create SellSignalBadge component in frontend/apps/my-portfolio/src/components/SellSignalBadge.tsx (stop_loss, take_profit, trend_break)
+- [x] MP-T023 [US3] Create SellSignalList component in frontend/apps/my-portfolio/src/components/SellSignalList.tsx (all active signals)
+- [x] MP-T024 [US3] Create SellSignalDetailModal component in frontend/apps/my-portfolio/src/components/SellSignalDetailModal.tsx (signal reason, indicators)
+- [x] MP-T025 [US3] Integrate sell signals into PositionCard in frontend/apps/my-portfolio/src/components/PositionCard.tsx
+- [x] MP-T026 [US3] Add sell signal refresh on portfolio load in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
 
 ---
 
@@ -97,16 +97,16 @@ My Portfolio Wizard에서 종목을 추가하고, 매수가/수량을 입력한 
 
 ### Frontend Tasks
 
-- [ ] MP-T027 [US5] Create settings state in frontend/apps/my-portfolio/src/store/settingsStore.ts (PortfolioSettings with defaults)
-- [ ] MP-T028 [US5] Create SettingsPage in frontend/apps/my-portfolio/src/pages/SettingsPage.tsx
-- [ ] MP-T029 [US5] Create StopLossSettings form in frontend/apps/my-portfolio/src/components/settings/StopLossSettings.tsx (percentage slider)
-- [ ] MP-T030 [US5] Create TakeProfitSettings form in frontend/apps/my-portfolio/src/components/settings/TakeProfitSettings.tsx (percentage slider)
-- [ ] MP-T031 [US5] Create TrendBreakSettings form in frontend/apps/my-portfolio/src/components/settings/TrendBreakSettings.tsx (enable/disable toggle, bollinger params)
-- [ ] MP-T032 [US5] Add validation to settings forms in frontend/apps/my-portfolio/src/components/settings/ (range checks per data-model.md)
-- [ ] MP-T033 [US5] Integrate shared settingsService for save with encryption in frontend/apps/my-portfolio/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
-- [ ] MP-T034 [US5] Integrate shared settingsService for load with decryption in frontend/apps/my-portfolio/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
-- [ ] MP-T035 [US5] Add reset to defaults button in frontend/apps/my-portfolio/src/pages/SettingsPage.tsx
-- [ ] MP-T036 [US5] Connect settings to sell signals API call in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx (pass custom params)
+- [x] MP-T027 [US5] Create settings state in frontend/apps/my-portfolio/src/store/settingsStore.ts (PortfolioSettings with defaults)
+- [x] MP-T028 [US5] Create SettingsPage in frontend/apps/my-portfolio/src/pages/SettingsPage.tsx
+- [x] MP-T029 [US5] Create StopLossSettings form in frontend/apps/my-portfolio/src/components/settings/StopLossSettings.tsx (percentage slider)
+- [x] MP-T030 [US5] Create TakeProfitSettings form in frontend/apps/my-portfolio/src/components/settings/TakeProfitSettings.tsx (percentage slider)
+- [x] MP-T031 [US5] Create TrendBreakSettings form in frontend/apps/my-portfolio/src/components/settings/TrendBreakSettings.tsx (enable/disable toggle, bollinger params)
+- [x] MP-T032 [US5] Add validation to settings forms in frontend/apps/my-portfolio/src/components/settings/ (range checks per data-model.md)
+- [x] MP-T033 [US5] Integrate shared settingsService for save with encryption in frontend/apps/my-portfolio/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
+- [x] MP-T034 [US5] Integrate shared settingsService for load with decryption in frontend/apps/my-portfolio/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
+- [x] MP-T035 [US5] Add reset to defaults button in frontend/apps/my-portfolio/src/pages/SettingsPage.tsx
+- [x] MP-T036 [US5] Connect settings to sell signals API call in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx (pass custom params)
 
 ---
 
@@ -120,9 +120,9 @@ My Portfolio Wizard에서 종목을 추가하고, 매수가/수량을 입력한 
 
 ### Frontend Tasks
 
-- [ ] MP-T037 [US6] Create DashboardSummary component in frontend/apps/my-portfolio/src/components/DashboardSummary.tsx (total invested, current value, total PnL)
-- [ ] MP-T038 [US6] Create PortfolioAllocation component in frontend/apps/my-portfolio/src/components/PortfolioAllocation.tsx (pie chart or bar)
-- [ ] MP-T039 [US6] Integrate DashboardSummary into PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
+- [x] MP-T037 [US6] Create DashboardSummary component in frontend/apps/my-portfolio/src/components/DashboardSummary.tsx (total invested, current value, total PnL)
+- [x] MP-T038 [US6] Create PortfolioAllocation component in frontend/apps/my-portfolio/src/components/PortfolioAllocation.tsx (pie chart or bar)
+- [x] MP-T039 [US6] Integrate DashboardSummary into PortfolioPage in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
 
 ---
 
@@ -131,12 +131,12 @@ My Portfolio Wizard에서 종목을 추가하고, 매수가/수량을 입력한 
 ### Goal
 UI 완성도 및 통합
 
-- [ ] MP-T040 Configure shared Header component with My Portfolio navigation in frontend/apps/my-portfolio/src/App.tsx (uses shared-ui/Header)
-- [ ] MP-T041 Configure shared Footer component with disclaimer ("투자 참고용이며 매매 권유가 아닙니다") in frontend/apps/my-portfolio/src/App.tsx (uses shared-ui/Footer)
-- [ ] MP-T042 Pass data freshness timestamp to Header component in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
-- [ ] MP-T043 Configure Daily Focus Wizard link in Header navigation props
-- [ ] MP-T044 Style pages with shared-ui theme in frontend/apps/my-portfolio/src/styles/
-- [ ] MP-T045 Verify independent build works: `pnpm --filter my-portfolio build` in frontend/apps/my-portfolio/
+- [x] MP-T040 Configure shared Header component with My Portfolio navigation in frontend/apps/my-portfolio/src/App.tsx (uses shared-ui/Header)
+- [x] MP-T041 Configure shared Footer component with disclaimer ("투자 참고용이며 매매 권유가 아닙니다") in frontend/apps/my-portfolio/src/App.tsx (uses shared-ui/Footer)
+- [x] MP-T042 Pass data freshness timestamp to Header component in frontend/apps/my-portfolio/src/pages/PortfolioPage.tsx
+- [x] MP-T043 Configure Daily Focus Wizard link in Header navigation props
+- [x] MP-T044 Style pages with shared-ui theme in frontend/apps/my-portfolio/src/styles/
+- [x] MP-T045 Verify independent build works: `pnpm --filter my-portfolio build` in frontend/apps/my-portfolio/
 
 ---
 

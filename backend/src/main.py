@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.src.api.common import stocks, user_data
 from backend.src.api.daily_focus import recommendations, stock_detail
+from backend.src.api.portfolio import calculate_pnl, sell_signals
 from backend.src.config.settings import get_settings
 from backend.src.middleware.rate_limit import RateLimitMiddleware
 
@@ -59,6 +60,16 @@ app.include_router(
     stocks.router,
     prefix="/api/stocks",
     tags=["Stock"]
+)
+app.include_router(
+    sell_signals.router,
+    prefix="/api/portfolio",
+    tags=["Portfolio"]
+)
+app.include_router(
+    calculate_pnl.router,
+    prefix="/api/portfolio",
+    tags=["Portfolio"]
 )
 
 # Daily Focus API

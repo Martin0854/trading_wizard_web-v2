@@ -267,3 +267,45 @@ class YFinanceClient:
                 time.sleep(batch_delay)
 
         return results
+
+
+# Module-level singleton instance for convenience functions
+_default_client: Optional[YFinanceClient] = None
+
+
+def _get_default_client() -> YFinanceClient:
+    """Get or create the default YFinanceClient instance."""
+    global _default_client
+    if _default_client is None:
+        _default_client = YFinanceClient()
+    return _default_client
+
+
+def get_stock_price(symbol: str) -> Optional[PriceResponse]:
+    """Get current stock price (convenience function).
+
+    Args:
+        symbol: Stock symbol (e.g., "005930.KS")
+
+    Returns:
+        PriceResponse with stock data or None on error
+    """
+    return _get_default_client().get_current_price(symbol)
+
+
+def get_stock_history(
+    symbol: str,
+    period: str = "1y",
+    validate: bool = True
+) -> Optional[pd.DataFrame]:
+    """Get historical OHLCV data (convenience function).
+
+    Args:
+        symbol: Stock symbol
+        period: History period (e.g., "1y", "6mo", "3mo")
+        validate: Whether to validate and clean data
+
+    Returns:
+        DataFrame with OHLCV data or None on error
+    """
+    return _get_default_client().get_price_history(symbol, period, validate)

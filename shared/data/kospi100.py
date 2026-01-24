@@ -133,6 +133,18 @@ def get_kospi100_symbols() -> list[str]:
     return [stock.symbol for stock in KOSPI_100_STOCKS]
 
 
+def get_kospi100_list() -> list[dict]:
+    """Get list of KOSPI 100 stocks as dictionaries.
+
+    Returns:
+        List of stock dictionaries with symbol, name, and market keys
+    """
+    return [
+        {"symbol": stock.symbol, "name": stock.name, "market": stock.market.value}
+        for stock in KOSPI_100_STOCKS
+    ]
+
+
 def get_kospi100_stocks() -> list[KospiStock]:
     """Get list of KOSPI 100 stocks with names.
 

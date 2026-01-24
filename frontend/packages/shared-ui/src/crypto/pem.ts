@@ -72,7 +72,7 @@ export async function getUserIdHashFromPem(pemContent: string): Promise<string> 
   }
 
   const keyData = parsePemFile(pemContent);
-  const hash = await crypto.subtle.digest('SHA-256', keyData);
+  const hash = await crypto.subtle.digest('SHA-256', keyData.buffer as ArrayBuffer);
   return arrayBufferToHex(hash);
 }
 
@@ -98,7 +98,7 @@ export async function deriveKeyFromPem(
   // Import key data as raw material
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    keyData,
+    keyData.buffer as ArrayBuffer,
     'PBKDF2',
     false,
     ['deriveKey']
@@ -108,7 +108,7 @@ export async function deriveKeyFromPem(
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt,
+      salt: salt.buffer as ArrayBuffer,
       iterations: 100000,
       hash: 'SHA-256',
     },
@@ -134,10 +134,11 @@ export async function encryptWithPem(
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKeyFromPem(pemContent, salt);
 
+  const plaintextBytes = stringToBytes(plaintext);
   const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
     key,
-    stringToBytes(plaintext)
+    plaintextBytes.buffer as ArrayBuffer
   );
 
   // Combine salt + iv + ciphertext
@@ -180,9 +181,9 @@ export async function decryptWithPem(
   const key = await deriveKeyFromPem(pemContent, salt);
 
   const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
     key,
-    ciphertext
+    ciphertext.buffer as ArrayBuffer
   );
 
   return new TextDecoder().decode(plaintext);

@@ -87,9 +87,10 @@ export async function deriveKey(
   salt: Uint8Array
 ): Promise<CryptoKey> {
   // Import password as raw key material
+  const passwordBytes = stringToBytes(password);
   const passwordKey = await crypto.subtle.importKey(
     'raw',
-    stringToBytes(password),
+    passwordBytes.buffer as ArrayBuffer,
     'PBKDF2',
     false,
     ['deriveKey']
@@ -99,7 +100,7 @@ export async function deriveKey(
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt,
+      salt: salt.buffer as ArrayBuffer,
       iterations: PBKDF2_ITERATIONS,
       hash: 'SHA-256',
     },
@@ -122,10 +123,11 @@ export async function encrypt(plaintext: string, password: string): Promise<stri
   const iv = generateIV();
   const key = await deriveKey(password, salt);
 
+  const plaintextBytes = stringToBytes(plaintext);
   const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
     key,
-    stringToBytes(plaintext)
+    plaintextBytes.buffer as ArrayBuffer
   );
 
   // Combine salt + iv + ciphertext
@@ -157,9 +159,9 @@ export async function decrypt(encryptedData: string, password: string): Promise<
   const key = await deriveKey(password, salt);
 
   const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
     key,
-    ciphertext
+    ciphertext.buffer as ArrayBuffer
   );
 
   return bytesToString(new Uint8Array(plaintext));
@@ -175,7 +177,8 @@ export async function decrypt(encryptedData: string, password: string): Promise<
  * @returns SHA-256 hash as hex string (64 characters)
  */
 export async function getUserIdHash(password: string): Promise<string> {
-  const hash = await crypto.subtle.digest('SHA-256', stringToBytes(password));
+  const passwordBytes = stringToBytes(password);
+  const hash = await crypto.subtle.digest('SHA-256', passwordBytes.buffer as ArrayBuffer);
   return arrayBufferToHex(hash);
 }
 

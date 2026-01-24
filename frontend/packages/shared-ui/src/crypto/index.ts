@@ -29,6 +29,8 @@ import {
   deriveKeyFromPem,
   encryptWithPem,
   decryptWithPem,
+  generateKeyPair,
+  downloadFile,
 } from './pem';
 
 // Re-export encryption functions
@@ -56,12 +58,17 @@ export {
   deriveKeyFromPem,
   encryptWithPem,
   decryptWithPem,
+  generateKeyPair,
+  downloadFile,
 };
+
+export type { GeneratedKeyPair } from './pem';
 
 /**
  * Authentication method type.
+ * @deprecated Use AuthMethod from services/authService instead.
  */
-export type AuthMethod = 'password' | 'pem';
+// AuthMethod is now exported from services/authService.ts to avoid duplicate exports
 
 /**
  * Unified encryption interface.

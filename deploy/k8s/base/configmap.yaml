@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trading-wizard-config
+  namespace: trading-wizard
+data:
+  # Frontend URLs (for cross-app navigation)
+  VITE_PORTAL_URL: "https://trading.kalee-dc.click"
+  VITE_DAILY_FOCUS_URL: "https://trading.kalee-dc.click/daily-focus"
+  VITE_PORTFOLIO_URL: "https://trading.kalee-dc.click/portfolio"
+  VITE_API_URL: "https://trading.kalee-dc.click/api"

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: trading-wizard-cert
+  namespace: istio-system
+spec:
+  secretName: trading-wizard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - trading.kalee-dc.click

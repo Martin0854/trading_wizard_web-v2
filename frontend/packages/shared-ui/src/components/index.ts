@@ -19,3 +19,5 @@ export type { FooterProps } from './Footer';
 
 export { SettingsForm, FormField } from './SettingsForm';
 export type { SettingsFormProps, FormFieldProps } from './SettingsForm';
+
+export { SessionGuard } from './SessionGuard';

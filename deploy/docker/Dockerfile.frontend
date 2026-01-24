@@ -1,0 +1,50 @@
+# Frontend Dockerfile (multi-stage build)
+# Build argument for app name: portal, daily-focus, my-portfolio
+ARG APP_NAME=portal
+
+# Stage 1: Build
+FROM node:20-alpine AS builder
+
+ARG APP_NAME
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY frontend/package.json ./frontend/
+COPY frontend/packages/shared-ui/package.json ./frontend/packages/shared-ui/
+COPY frontend/apps/${APP_NAME}/package.json ./frontend/apps/${APP_NAME}/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy tsconfig files (needed for TypeScript inheritance)
+COPY frontend/tsconfig.json ./frontend/
+
+# Copy source files
+COPY frontend/packages/shared-ui/ ./frontend/packages/shared-ui/
+COPY frontend/apps/${APP_NAME}/ ./frontend/apps/${APP_NAME}/
+
+# Build shared-ui first
+RUN pnpm --filter @trading-wizard/shared-ui build
+
+# Build the app
+RUN pnpm --filter ${APP_NAME} build
+
+# Stage 2: Serve with nginx
+FROM nginx:alpine
+
+ARG APP_NAME
+
+# Copy nginx config
+COPY deploy/docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built files
+COPY --from=builder /app/frontend/apps/${APP_NAME}/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

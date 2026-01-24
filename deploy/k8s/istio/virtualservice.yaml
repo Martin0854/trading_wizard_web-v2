@@ -1,0 +1,54 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: trading-wizard-vs
+  namespace: trading-wizard
+spec:
+  hosts:
+    - trading.kalee-dc.click
+  gateways:
+    - trading-wizard-gateway
+  http:
+    # API routes -> Backend
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: backend
+            port:
+              number: 8000
+
+    # Daily Focus app
+    - match:
+        - uri:
+            prefix: /daily-focus
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: daily-focus
+            port:
+              number: 80
+
+    # My Portfolio app
+    - match:
+        - uri:
+            prefix: /portfolio
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: my-portfolio
+            port:
+              number: 80
+
+    # Default -> Portal (login)
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: portal
+            port:
+              number: 80

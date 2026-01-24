@@ -1,6 +1,7 @@
 """Signal scanner service for Daily Focus Wizard.
 
 Scans KOSPI Top 100 stocks for buy signals based on Bollinger Band squeeze strategy.
+Uses two-tier caching (Redis + PostgreSQL) to minimize yfinance API calls.
 """
 
 import asyncio
@@ -8,8 +9,11 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from shared.data.batch_fetcher import BatchFetcher
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from shared.data.kospi100 import get_kospi100_list
+from shared.data.persistent_cache import PersistentCacheClient, create_persistent_cache
+from shared.data.yfinance_client import YFinanceClient
 from shared.indicators import (
     TechnicalIndicatorsResult,
     calculate_all_indicators,
@@ -18,6 +22,9 @@ from shared.indicators import (
 from shared.types.models import BollingerBands, MACDIndicator, Stock, TechnicalIndicators
 
 logger = logging.getLogger(__name__)
+
+# Module-level cache client (initialized on first use)
+_cache_client: PersistentCacheClient | None = None
 
 
 @dataclass
@@ -75,8 +82,11 @@ async def scan_for_buy_signals(
     macd_slow: int = 26,
     macd_signal: int = 9,
     volume_avg_period: int = 20,
+    db_session: AsyncSession | None = None,
 ) -> ScanResult:
     """Scan KOSPI Top 100 for buy signals.
+
+    Uses two-tier caching (Redis + PostgreSQL) to minimize API calls.
 
     Args:
         confidence_threshold: Minimum confidence score for recommendations
@@ -90,12 +100,21 @@ async def scan_for_buy_signals(
         macd_slow: MACD slow period
         macd_signal: MACD signal period
         volume_avg_period: Volume average period
+        db_session: Database session for persistent caching
 
     Returns:
         ScanResult with recommendations sorted by confidence score
     """
     stocks = get_kospi100_list()
-    fetcher = BatchFetcher()
+
+    # Use persistent cache if db_session provided, otherwise fallback to YFinanceClient
+    cache_client = None
+    yfinance_client = None
+    if db_session:
+        cache_client = await create_persistent_cache(db_session)
+    else:
+        yfinance_client = YFinanceClient()
+        logger.warning("No db_session provided, using uncached YFinanceClient")
 
     recommendations: list[BuyRecommendation] = []
     scanned_count = 0
@@ -103,12 +122,15 @@ async def scan_for_buy_signals(
     for stock_info in stocks:
         symbol = stock_info["symbol"]
         try:
-            # Fetch historical data
-            data = await asyncio.to_thread(
-                fetcher.fetch_single,
-                symbol,
-                period="3mo"
-            )
+            # Fetch historical data (cached)
+            if cache_client:
+                data = await cache_client.get_price_history(symbol, period="3mo")
+            else:
+                data = await asyncio.to_thread(
+                    yfinance_client.get_price_history,
+                    symbol,
+                    period="3mo"
+                )
             if data is None or data.empty:
                 continue
 
@@ -195,29 +217,45 @@ async def get_stock_detail(
     macd_signal: int = 9,
     volume_avg_period: int = 20,
     confidence_threshold: float = 55.0,
+    db_session: AsyncSession | None = None,
 ) -> dict | None:
     """Get detailed stock information with technical indicators.
+
+    Uses two-tier caching (Redis + PostgreSQL) to minimize API calls.
 
     Args:
         symbol: Stock symbol
         Other args: Strategy parameters
+        db_session: Database session for persistent caching
 
     Returns:
         Dictionary with stock details or None if not found
     """
-    fetcher = BatchFetcher()
     stocks = {s["symbol"]: s for s in get_kospi100_list()}
 
     stock_info = stocks.get(symbol)
     if not stock_info:
         return None
 
+    # Use persistent cache if db_session provided
+    cache_client = None
+    yfinance_client = None
+    if db_session:
+        cache_client = await create_persistent_cache(db_session)
+    else:
+        yfinance_client = YFinanceClient()
+        logger.warning("No db_session provided, using uncached YFinanceClient")
+
     try:
-        data = await asyncio.to_thread(
-            fetcher.fetch_single,
-            symbol,
-            period="3mo"
-        )
+        # Fetch historical data (cached)
+        if cache_client:
+            data = await cache_client.get_price_history(symbol, period="3mo")
+        else:
+            data = await asyncio.to_thread(
+                yfinance_client.get_price_history,
+                symbol,
+                period="3mo"
+            )
         if data is None or data.empty:
             return None
 

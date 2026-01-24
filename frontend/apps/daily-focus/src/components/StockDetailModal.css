@@ -1,0 +1,227 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.modal-close:hover {
+  background: var(--color-background);
+}
+
+.modal-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl);
+}
+
+.modal-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.stock-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.stock-title h2 {
+  font-size: var(--font-size-2xl);
+  margin: 0;
+}
+
+.stock-title .symbol {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.price-info {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.price-info .current-price {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+.price-info .change {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}
+
+.price-info .change.positive {
+  color: var(--color-danger);
+}
+
+.price-info .change.negative {
+  color: var(--color-primary);
+}
+
+.recommendation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: #dcfce7;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+}
+
+.badge-label {
+  color: #166534;
+  font-size: var(--font-size-sm);
+}
+
+.badge-score {
+  font-weight: 600;
+  color: #166534;
+}
+
+.indicators-section h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text);
+}
+
+.indicator-group {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+}
+
+.indicator-group h4 {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.indicator-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.indicator-item .label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.indicator-item .value {
+  font-weight: 500;
+}
+
+.indicator-item .value.positive {
+  color: var(--color-danger);
+}
+
+.indicator-item .value.negative {
+  color: var(--color-primary);
+}
+
+.indicator-item .value.highlight {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.indicator-item .value.status.expanding {
+  color: var(--color-success);
+}
+
+.indicator-item .value.status.squeezing {
+  color: var(--color-warning);
+}
+
+.rsi-bar {
+  position: relative;
+  height: 24px;
+  background: linear-gradient(to right, #3b82f6 0%, #3b82f6 30%, #9ca3af 30%, #9ca3af 70%, #ef4444 70%, #ef4444 100%);
+  border-radius: 4px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.rsi-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 32px;
+  background: var(--color-text);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.rsi-zones {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.rsi-value {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  text-align: center;
+}
+
+.signal-section {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.signal-section h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.signal-reason {
+  background: var(--color-background);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}

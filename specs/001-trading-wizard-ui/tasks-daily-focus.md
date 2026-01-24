@@ -26,11 +26,11 @@ Daily Focus Wizard는 KOSPI Top 100 종목의 매수 추천 시스템입니다:
 ### Goal
 Daily Focus 프론트엔드 앱 초기화
 
-- [ ] DF-T001 Initialize Vite React app in frontend/apps/daily-focus/
-- [ ] DF-T002 Configure vite.config.ts with port 3001 and shared-ui alias in frontend/apps/daily-focus/vite.config.ts
-- [ ] DF-T003 Install dependencies (react-query, zustand, axios) in frontend/apps/daily-focus/package.json
-- [ ] DF-T004 Create basic App.tsx with router setup in frontend/apps/daily-focus/src/App.tsx
-- [ ] DF-T005 Create environment configuration in frontend/apps/daily-focus/.env (API_URL=http://localhost:8000)
+- [x] DF-T001 Initialize Vite React app in frontend/apps/daily-focus/
+- [x] DF-T002 Configure vite.config.ts with port 3001 and shared-ui alias in frontend/apps/daily-focus/vite.config.ts
+- [x] DF-T003 Install dependencies (react-query, zustand, axios) in frontend/apps/daily-focus/package.json
+- [x] DF-T004 Create basic App.tsx with router setup in frontend/apps/daily-focus/src/App.tsx
+- [x] DF-T005 Create environment configuration in frontend/apps/daily-focus/.env (API_URL=http://localhost:8000)
 
 ---
 
@@ -44,22 +44,22 @@ Daily Focus 페이지 접속 시 매수 추천 종목 목록이 신뢰도 점수
 
 ### Backend Tasks
 
-- [ ] DF-T006 [US1] Create signal scanner service in backend/src/services/signal_scanner.py (squeeze detection, breakout check)
-- [ ] DF-T007 [US1] Implement confidence score calculation in backend/src/services/signal_scanner.py per TRADING_STRATEGY_ALGORITHM.md
-- [ ] DF-T008 [US1] Create buy recommendation generator in backend/src/services/signal_scanner.py (filter by threshold, sort by score)
-- [ ] DF-T009 [US1] Implement GET /api/daily-focus/recommendations endpoint in backend/src/api/daily_focus/recommendations.py
-- [ ] DF-T010 [US1] Implement GET /api/daily-focus/stock/{symbol} endpoint in backend/src/api/daily_focus/stock_detail.py
+- [x] DF-T006 [US1] Create signal scanner service in backend/src/services/signal_scanner.py (squeeze detection, breakout check)
+- [x] DF-T007 [US1] Implement confidence score calculation in backend/src/services/signal_scanner.py per TRADING_STRATEGY_ALGORITHM.md
+- [x] DF-T008 [US1] Create buy recommendation generator in backend/src/services/signal_scanner.py (filter by threshold, sort by score)
+- [x] DF-T009 [US1] Implement GET /api/daily-focus/recommendations endpoint in backend/src/api/daily_focus/recommendations.py
+- [x] DF-T010 [US1] Implement GET /api/daily-focus/stock/{symbol} endpoint in backend/src/api/daily_focus/stock_detail.py
 
 ### Frontend Tasks
 
-- [ ] DF-T011 [US1] Create API client in frontend/apps/daily-focus/src/services/api.ts (fetchRecommendations, fetchStockDetail)
-- [ ] DF-T012 [US1] Create Zustand store in frontend/apps/daily-focus/src/store/dailyFocusStore.ts (recommendations, loading, error)
-- [ ] DF-T013 [US1] Create RecommendationList component in frontend/apps/daily-focus/src/components/RecommendationList.tsx
-- [ ] DF-T014 [US1] Create RecommendationCard component in frontend/apps/daily-focus/src/components/RecommendationCard.tsx (stock info, confidence score, indicators)
-- [ ] DF-T015 [US1] Create StockDetailModal component in frontend/apps/daily-focus/src/components/StockDetailModal.tsx (detailed indicators)
-- [ ] DF-T016 [US1] Create EmptyState component in frontend/apps/daily-focus/src/components/EmptyState.tsx ("오늘은 매수 추천 종목이 없습니다")
-- [ ] DF-T017 [US1] Create HomePage in frontend/apps/daily-focus/src/pages/HomePage.tsx (integrates RecommendationList)
-- [ ] DF-T018 [US1] Add loading spinner and error handling to HomePage in frontend/apps/daily-focus/src/pages/HomePage.tsx
+- [x] DF-T011 [US1] Create API client in frontend/apps/daily-focus/src/services/api.ts (fetchRecommendations, fetchStockDetail)
+- [x] DF-T012 [US1] Create Zustand store in frontend/apps/daily-focus/src/store/dailyFocusStore.ts (recommendations, loading, error)
+- [x] DF-T013 [US1] Create RecommendationList component in frontend/apps/daily-focus/src/components/RecommendationList.tsx
+- [x] DF-T014 [US1] Create RecommendationCard component in frontend/apps/daily-focus/src/components/RecommendationCard.tsx (stock info, confidence score, indicators)
+- [x] DF-T015 [US1] Create StockDetailModal component in frontend/apps/daily-focus/src/components/StockDetailModal.tsx (detailed indicators)
+- [x] DF-T016 [US1] Create EmptyState component in frontend/apps/daily-focus/src/components/EmptyState.tsx ("오늘은 매수 추천 종목이 없습니다")
+- [x] DF-T017 [US1] Create HomePage in frontend/apps/daily-focus/src/pages/HomePage.tsx (integrates RecommendationList)
+- [x] DF-T018 [US1] Add loading spinner and error handling to HomePage in frontend/apps/daily-focus/src/pages/HomePage.tsx
 
 ---
 
@@ -73,16 +73,16 @@ Daily Focus 페이지 접속 시 매수 추천 종목 목록이 신뢰도 점수
 
 ### Frontend Tasks
 
-- [ ] DF-T019 [US4] Create settings state in frontend/apps/daily-focus/src/store/settingsStore.ts (DailyFocusSettings with defaults)
-- [ ] DF-T020 [US4] Create SettingsPage in frontend/apps/daily-focus/src/pages/SettingsPage.tsx
-- [ ] DF-T021 [US4] Create BollingerSettings form in frontend/apps/daily-focus/src/components/settings/BollingerSettings.tsx (period, stdDev, squeeze threshold)
-- [ ] DF-T022 [US4] Create IndicatorSettings form in frontend/apps/daily-focus/src/components/settings/IndicatorSettings.tsx (RSI, MACD, Volume periods)
-- [ ] DF-T023 [US4] Create ConfidenceSettings form in frontend/apps/daily-focus/src/components/settings/ConfidenceSettings.tsx (threshold slider)
-- [ ] DF-T024 [US4] Add validation to settings forms in frontend/apps/daily-focus/src/components/settings/ (range checks per data-model.md)
-- [ ] DF-T025 [US4] Integrate shared settingsService for save with encryption in frontend/apps/daily-focus/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
-- [ ] DF-T026 [US4] Integrate shared settingsService for load with decryption in frontend/apps/daily-focus/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
-- [ ] DF-T027 [US4] Add reset to defaults button in frontend/apps/daily-focus/src/pages/SettingsPage.tsx
-- [ ] DF-T028 [US4] Connect settings to recommendations API call in frontend/apps/daily-focus/src/pages/HomePage.tsx (pass custom params)
+- [x] DF-T019 [US4] Create settings state in frontend/apps/daily-focus/src/store/settingsStore.ts (DailyFocusSettings with defaults)
+- [x] DF-T020 [US4] Create SettingsPage in frontend/apps/daily-focus/src/pages/SettingsPage.tsx
+- [x] DF-T021 [US4] Create BollingerSettings form in frontend/apps/daily-focus/src/components/settings/BollingerSettings.tsx (period, stdDev, squeeze threshold)
+- [x] DF-T022 [US4] Create IndicatorSettings form in frontend/apps/daily-focus/src/components/settings/IndicatorSettings.tsx (RSI, MACD, Volume periods)
+- [x] DF-T023 [US4] Create ConfidenceSettings form in frontend/apps/daily-focus/src/components/settings/ConfidenceSettings.tsx (threshold slider)
+- [x] DF-T024 [US4] Add validation to settings forms in frontend/apps/daily-focus/src/components/settings/ (range checks per data-model.md)
+- [x] DF-T025 [US4] Integrate shared settingsService for save with encryption in frontend/apps/daily-focus/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
+- [x] DF-T026 [US4] Integrate shared settingsService for load with decryption in frontend/apps/daily-focus/src/store/settingsStore.ts (uses shared-ui/services/settingsService)
+- [x] DF-T027 [US4] Add reset to defaults button in frontend/apps/daily-focus/src/pages/SettingsPage.tsx
+- [x] DF-T028 [US4] Connect settings to recommendations API call in frontend/apps/daily-focus/src/pages/HomePage.tsx (pass custom params)
 
 ---
 
@@ -91,12 +91,12 @@ Daily Focus 페이지 접속 시 매수 추천 종목 목록이 신뢰도 점수
 ### Goal
 UI 완성도 및 통합
 
-- [ ] DF-T029 Configure shared Header component with Daily Focus navigation in frontend/apps/daily-focus/src/App.tsx (uses shared-ui/Header)
-- [ ] DF-T030 Configure shared Footer component with disclaimer ("투자 신호이며 매수 추천이 아닙니다") in frontend/apps/daily-focus/src/App.tsx (uses shared-ui/Footer)
-- [ ] DF-T031 Pass data freshness timestamp to Header component in frontend/apps/daily-focus/src/pages/HomePage.tsx
-- [ ] DF-T032 Configure My Portfolio Wizard link in Header navigation props
-- [ ] DF-T033 Style pages with shared-ui theme in frontend/apps/daily-focus/src/styles/
-- [ ] DF-T034 Verify independent build works: `pnpm --filter daily-focus build` in frontend/apps/daily-focus/
+- [x] DF-T029 Configure shared Header component with Daily Focus navigation in frontend/apps/daily-focus/src/App.tsx (uses shared-ui/Header)
+- [x] DF-T030 Configure shared Footer component with disclaimer ("투자 신호이며 매수 추천이 아닙니다") in frontend/apps/daily-focus/src/App.tsx (uses shared-ui/Footer)
+- [x] DF-T031 Pass data freshness timestamp to Header component in frontend/apps/daily-focus/src/pages/HomePage.tsx
+- [x] DF-T032 Configure My Portfolio Wizard link in Header navigation props
+- [x] DF-T033 Style pages with shared-ui theme in frontend/apps/daily-focus/src/styles/
+- [x] DF-T034 Verify independent build works: `pnpm --filter daily-focus build` in frontend/apps/daily-focus/
 
 ---
 

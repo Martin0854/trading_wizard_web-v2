@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.src.api.common import stocks, user_data
+from backend.src.api.daily_focus import recommendations, stock_detail
 from backend.src.config.settings import get_settings
 from backend.src.middleware.rate_limit import RateLimitMiddleware
 
@@ -59,6 +60,10 @@ app.include_router(
     prefix="/api/stocks",
     tags=["Stock"]
 )
+
+# Daily Focus API
+app.include_router(recommendations.router)
+app.include_router(stock_detail.router)
 
 
 @app.get("/health")

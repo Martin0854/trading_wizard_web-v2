@@ -1,0 +1,24 @@
+{
+  "name": "trading-wizard-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev:daily-focus": "pnpm --filter daily-focus dev",
+    "dev:my-portfolio": "pnpm --filter my-portfolio dev",
+    "build": "pnpm -r build",
+    "build:daily-focus": "pnpm --filter daily-focus build",
+    "build:my-portfolio": "pnpm --filter my-portfolio build",
+    "test": "pnpm -r test",
+    "lint": "eslint packages/shared-ui/src --ext .ts,.tsx",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.53.1"
+  }
+}

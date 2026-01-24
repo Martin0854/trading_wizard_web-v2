@@ -23,6 +23,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: trading-wizard-config
+            - secretRef:
+                name: trading-wizard-secrets
           resources:
             requests:
               memory: "256Mi"

@@ -24,7 +24,10 @@ spec:
             - name: POSTGRES_USER
               value: "trading"
             - name: POSTGRES_PASSWORD
-              value: "trading"
+              valueFrom:
+                secretKeyRef:
+                  name: trading-wizard-secrets
+                  key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
               value: "trading_wizard"
           resources:

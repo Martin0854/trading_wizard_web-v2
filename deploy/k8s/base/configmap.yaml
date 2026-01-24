@@ -4,10 +4,6 @@ metadata:
   name: trading-wizard-config
   namespace: trading-wizard
 data:
-  # Backend config
-  REDIS_URL: "redis://redis:6379"
-  DATABASE_URL: "postgresql://trading:trading@postgres:5432/trading_wizard"
-
   # Frontend URLs (for cross-app navigation)
   VITE_PORTAL_URL: "https://trading.kalee-dc.click"
   VITE_DAILY_FOCUS_URL: "https://trading.kalee-dc.click/daily-focus"

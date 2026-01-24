@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/LoginForm';
 import { useAuthStore } from '../store/authStore';
@@ -9,20 +9,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, error, login, checkSession, clearError } = useAuthStore();
 
-  useEffect(() => {
-    // Check existing session on mount
-    if (checkSession()) {
-      handlePostLogin();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      handlePostLogin();
-    }
-  }, [isAuthenticated]);
-
-  const handlePostLogin = () => {
+  const handlePostLogin = useCallback(() => {
     // Check if there's a return URL
     const returnUrl = getReturnUrl();
     if (returnUrl) {
@@ -30,7 +17,20 @@ export function LoginPage() {
     } else {
       navigate('/dashboard');
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    // Check existing session on mount
+    if (checkSession()) {
+      handlePostLogin();
+    }
+  }, [checkSession, handlePostLogin]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      handlePostLogin();
+    }
+  }, [isAuthenticated, handlePostLogin]);
 
   const handleSubmit = async (credentials: AuthCredentials) => {
     clearError();

@@ -40,7 +40,7 @@ function getSessionService(): SessionService {
   return sessionService;
 }
 
-export const useAuthStore = create<AuthState>((set, _get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,

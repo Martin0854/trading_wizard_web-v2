@@ -5,6 +5,7 @@ namespace: trading-wizard
 
 resources:
   - namespace.yaml
+  - base/secrets.yaml
   - base/configmap.yaml
   - base/redis.yaml
   - base/postgres.yaml

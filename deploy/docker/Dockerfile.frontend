@@ -21,6 +21,9 @@ COPY frontend/apps/${APP_NAME}/package.json ./frontend/apps/${APP_NAME}/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
+# Copy tsconfig files (needed for TypeScript inheritance)
+COPY frontend/tsconfig.json ./frontend/
+
 # Copy source files
 COPY frontend/packages/shared-ui/ ./frontend/packages/shared-ui/
 COPY frontend/apps/${APP_NAME}/ ./frontend/apps/${APP_NAME}/

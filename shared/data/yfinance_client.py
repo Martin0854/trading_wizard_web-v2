@@ -9,7 +9,7 @@ Implements Constitution III requirements:
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from threading import Lock
 from typing import Optional
@@ -37,12 +37,8 @@ class RateLimiter:
     max_tokens: int = 2000  # Max requests per hour
     refill_rate: float = 2000 / 3600  # Tokens per second
     tokens: float = 2000
-    last_refill: float = 0
-    lock: Lock = None  # type: ignore
-
-    def __post_init__(self):
-        self.lock = Lock()
-        self.last_refill = time.time()
+    last_refill: float = field(default_factory=time.time)
+    lock: Lock = field(default_factory=Lock)
 
     def acquire(self, tokens: int = 1) -> bool:
         """Acquire tokens for API request.

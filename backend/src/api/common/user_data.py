@@ -29,6 +29,11 @@ class UserDataResponse(BaseModel):
     updatedAt: datetime
 
 
+# Maximum blob size: 1MB (Base64 encoded, roughly 1.37MB in Base64)
+MAX_BLOB_SIZE = 1 * 1024 * 1024  # 1MB in bytes
+MAX_BLOB_BASE64_SIZE = int(MAX_BLOB_SIZE * 1.4)  # ~1.4MB for Base64
+
+
 class UserDataSaveRequest(BaseModel):
     """Request model for user data save."""
     encryptedBlob: str  # Base64 encoded
@@ -36,10 +41,18 @@ class UserDataSaveRequest(BaseModel):
     @field_validator("encryptedBlob")
     @classmethod
     def validate_base64(cls, v: str) -> str:
+        # Check size limit first (prevent DoS)
+        if len(v) > MAX_BLOB_BASE64_SIZE:
+            raise ValueError(f"데이터 크기가 너무 큽니다. 최대 {MAX_BLOB_SIZE // 1024}KB까지 허용됩니다.")
+
         try:
-            base64.b64decode(v)
+            decoded = base64.b64decode(v)
+            if len(decoded) > MAX_BLOB_SIZE:
+                raise ValueError(f"데이터 크기가 너무 큽니다. 최대 {MAX_BLOB_SIZE // 1024}KB까지 허용됩니다.")
             return v
         except Exception as e:
+            if "데이터 크기" in str(e):
+                raise
             raise ValueError("Invalid Base64 encoding") from e
 
 

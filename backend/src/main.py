@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.src.api.common import stocks, user_data
 from backend.src.config.settings import get_settings
+from backend.src.middleware.rate_limit import RateLimitMiddleware
 
 settings = get_settings()
 
@@ -37,6 +38,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Configure rate limiting (60 requests/min per IP, burst up to 100)
+app.add_middleware(
+    RateLimitMiddleware,
+    requests_per_minute=60,
+    burst_size=100,
+    exclude_paths=["/health", "/docs", "/openapi.json", "/redoc"],
 )
 
 # Include routers

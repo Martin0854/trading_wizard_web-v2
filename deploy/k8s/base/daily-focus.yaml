@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: daily-focus
-          image: splkm97/trading-wizard-daily-focus:aeb1d03
+          image: splkm97/trading-wizard-daily-focus:5f51783
           ports:
             - containerPort: 80
           resources:

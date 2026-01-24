@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: portal
-          image: splkm97/trading-wizard-portal:aeb1d03
+          image: splkm97/trading-wizard-portal:5f51783
           ports:
             - containerPort: 80
           resources:

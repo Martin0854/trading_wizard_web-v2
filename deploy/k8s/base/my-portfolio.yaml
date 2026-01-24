@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: my-portfolio
-          image: splkm97/trading-wizard-my-portfolio:aeb1d03
+          image: splkm97/trading-wizard-my-portfolio:5f51783
           ports:
             - containerPort: 80
           resources:

@@ -15,7 +15,27 @@ from backend.src.services.sell_signal import (
     SellSignalType,
     generate_sell_signals,
 )
-from shared.data.yfinance_client import get_stock_history, get_stock_price
+
+
+def _get_stock_client():
+    """Get stock data client (KRX preferred, yfinance fallback)."""
+    try:
+        from shared.data.krx_client import KRXClient
+        return KRXClient()
+    except ImportError:
+        from shared.data.yfinance_client import YFinanceClient
+        return YFinanceClient()
+
+
+# Module-level client
+_stock_client = None
+
+
+def _get_client():
+    global _stock_client
+    if _stock_client is None:
+        _stock_client = _get_stock_client()
+    return _stock_client
 
 logger = logging.getLogger(__name__)
 
@@ -109,16 +129,17 @@ async def get_sell_signals(request: SellSignalRequest) -> SellSignalListResponse
     for position in request.positions:
         try:
             # Get current price
-            price_data = get_stock_price(position.symbol)
-            if price_data is None:
+            client = _get_client()
+            price_response = client.get_current_price(position.symbol)
+            if price_response is None:
                 continue
 
-            current_price = price_data.current_price
+            current_price = price_response.stock.current_price
 
             # Get historical prices if trend break is enabled
             prices = None
             if settings.sell_on_middle_band:
-                history = get_stock_history(
+                history = client.get_price_history(
                     position.symbol,
                     period="1mo"  # 1 month for Bollinger calculation
                 )

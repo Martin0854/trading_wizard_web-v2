@@ -14,7 +14,22 @@ from backend.src.services.pnl_calculator import (
     calculate_portfolio_pnl,
     calculate_position_pnl,
 )
-from shared.data.yfinance_client import get_stock_price
+
+
+def _get_stock_price(symbol: str):
+    """Get stock price using KRX (preferred) or yfinance."""
+    try:
+        from shared.data.krx_client import get_stock_price as krx_get_price
+        response = krx_get_price(symbol)
+        if response:
+            return response.stock
+        return None
+    except ImportError:
+        from shared.data.yfinance_client import get_stock_price as yf_get_price
+        response = yf_get_price(symbol)
+        if response:
+            return response.stock
+        return None
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +122,8 @@ async def calculate_pnl(request: PnLCalculationRequest) -> PnLCalculationRespons
     for position in request.positions:
         try:
             # Get current price
-            price_data = get_stock_price(position.symbol)
-            current_price = 0.0 if price_data is None else price_data.current_price
+            stock = _get_stock_price(position.symbol)
+            current_price = 0.0 if stock is None else stock.current_price
 
             # Calculate PnL
             pnl = calculate_position_pnl(

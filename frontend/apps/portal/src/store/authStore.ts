@@ -62,9 +62,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         return false;
       }
 
-      // Create session
+      // Create session with credentials for client-side encryption
+      // For password auth, store the password directly for encryption
+      // For PEM auth, store the PEM content
+      const encryptedCredentials = credentials.method === 'password'
+        ? credentials.password
+        : credentials.pemContent;
+
       const session = getSessionService();
-      session.createSession(result.session);
+      session.createSession(result.session, encryptedCredentials);
 
       set({
         isAuthenticated: true,

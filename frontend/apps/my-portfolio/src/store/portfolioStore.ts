@@ -2,6 +2,7 @@
  * Portfolio Zustand Store
  *
  * Manages portfolio positions, trading history, and UI state
+ * Persists data to backend via encrypted user data API
  */
 
 import { create } from 'zustand';
@@ -11,7 +12,12 @@ import type {
   TradingHistory,
   SellSignal,
   PositionPnL,
+  DecryptedUserData,
 } from '@trading-wizard/shared-ui/types';
+import { INITIAL_USER_DATA } from '@trading-wizard/shared-ui/types';
+import { loadSession } from '@trading-wizard/shared-ui/services';
+import { encrypt, decrypt } from '@trading-wizard/shared-ui/crypto';
+import { getUserData, saveUserData } from '../services/api';
 
 interface PortfolioState {
   // Data
@@ -22,10 +28,15 @@ interface PortfolioState {
 
   // UI state
   isLoading: boolean;
+  isSyncing: boolean;
+  isInitialized: boolean;
   error: string | null;
   lastUpdated: Date | null;
 
   // Actions
+  loadFromServer: () => Promise<void>;
+  saveToServer: () => Promise<void>;
+
   setPositions: (positions: PortfolioPosition[]) => void;
   addPosition: (position: Omit<PortfolioPosition, 'id' | 'totalInvested' | 'status'>) => PortfolioPosition;
   updatePosition: (id: string, updates: Partial<PortfolioPosition>) => void;
@@ -70,6 +81,25 @@ function calculateNewAvgPrice(
   return (currentAvgPrice * currentQuantity + newPrice * newQuantity) / totalQuantity;
 }
 
+/**
+ * Get password from session's encrypted credentials
+ * The encryptedCredentials field stores the password directly for password auth
+ */
+function getSessionPassword(): string | null {
+  const session = loadSession();
+  if (!session) return null;
+
+  // For password auth, encryptedCredentials contains the password
+  // (stored in sessionStorage during login)
+  return session.encryptedCredentials ?? null;
+}
+
+/**
+ * Debounced save to prevent too many API calls
+ */
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+const SAVE_DEBOUNCE_MS = 1000;
+
 export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   // Initial state
   positions: [],
@@ -77,8 +107,90 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   sellSignals: [],
   positionPnLs: new Map(),
   isLoading: false,
+  isSyncing: false,
+  isInitialized: false,
   error: null,
   lastUpdated: null,
+
+  // Load data from server
+  loadFromServer: async () => {
+    const session = loadSession();
+    const password = getSessionPassword();
+
+    if (!session || !password) {
+      set({ isInitialized: true });
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await getUserData(session.userIdHash);
+      const decrypted = await decrypt(response.encryptedBlob, password);
+      const userData: DecryptedUserData = JSON.parse(decrypted);
+
+      set({
+        positions: userData.positions,
+        tradingHistory: userData.tradingHistory,
+        isLoading: false,
+        isInitialized: true,
+        lastUpdated: new Date(),
+      });
+    } catch (error) {
+      // 404 means new user, use initial data
+      if ((error as { response?: { status?: number } }).response?.status === 404) {
+        set({
+          positions: INITIAL_USER_DATA.positions,
+          tradingHistory: INITIAL_USER_DATA.tradingHistory,
+          isLoading: false,
+          isInitialized: true,
+        });
+      } else {
+        set({
+          error: '데이터를 불러오는데 실패했습니다.',
+          isLoading: false,
+          isInitialized: true,
+        });
+      }
+    }
+  },
+
+  // Save data to server (debounced)
+  saveToServer: async () => {
+    // Clear existing timeout
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+
+    // Debounce save
+    saveTimeout = setTimeout(async () => {
+      const session = loadSession();
+      const password = getSessionPassword();
+
+      if (!session || !password) {
+        return;
+      }
+
+      const state = get();
+      set({ isSyncing: true });
+
+      try {
+        const userData: DecryptedUserData = {
+          ...INITIAL_USER_DATA,
+          positions: state.positions,
+          tradingHistory: state.tradingHistory,
+        };
+
+        const encrypted = await encrypt(JSON.stringify(userData), password);
+        await saveUserData(session.userIdHash, { encryptedBlob: encrypted });
+
+        set({ isSyncing: false, lastUpdated: new Date() });
+      } catch (error) {
+        console.error('Failed to save portfolio data:', error);
+        set({ isSyncing: false });
+      }
+    }, SAVE_DEBOUNCE_MS);
+  },
 
   // Position actions
   setPositions: (positions) => set({ positions, lastUpdated: new Date() }),
@@ -108,6 +220,9 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       lastUpdated: new Date(),
     }));
 
+    // Auto-save to server
+    get().saveToServer();
+
     return newPosition;
   },
 
@@ -118,6 +233,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       ),
       lastUpdated: new Date(),
     }));
+    get().saveToServer();
   },
 
   removePosition: (id) => {
@@ -125,6 +241,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       positions: state.positions.filter((p) => p.id !== id),
       lastUpdated: new Date(),
     }));
+    get().saveToServer();
   },
 
   addBuy: (positionId, price, quantity, date, note) => {
@@ -162,16 +279,17 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
           id: uuidv4(),
           positionId,
           symbol: position.symbol,
-          type: 'buy',
+          type: 'buy' as const,
           price,
           quantity,
           totalAmount: price * quantity,
           tradedAt: date,
-          note,
+          ...(note ? { note } : {}),
         },
       ],
       lastUpdated: new Date(),
     }));
+    get().saveToServer();
   },
 
   sellPosition: (positionId, price, quantity, date, note) => {
@@ -189,7 +307,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
           ? {
               ...p,
               quantity: Math.max(0, remainingQuantity),
-              status: isFulySold ? 'sold' : 'holding',
+              status: isFulySold ? ('sold' as const) : ('holding' as const),
               soldPrice: price,
               soldDate: date,
               soldQuantity: (p.soldQuantity || 0) + quantity,
@@ -202,16 +320,17 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
           id: uuidv4(),
           positionId,
           symbol: position.symbol,
-          type: 'sell',
+          type: 'sell' as const,
           price,
           quantity,
           totalAmount: price * quantity,
           tradedAt: date,
-          note,
+          ...(note ? { note } : {}),
         },
       ],
       lastUpdated: new Date(),
     }));
+    get().saveToServer();
   },
 
   // History and signals

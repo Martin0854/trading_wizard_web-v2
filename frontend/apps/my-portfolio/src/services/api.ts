@@ -10,6 +10,8 @@ import type {
   PnLCalculationResponse,
   StockSearchResponse,
   StockPriceResponse,
+  UserDataResponse,
+  UserDataSaveRequest,
 } from '@trading-wizard/shared-ui/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -71,6 +73,32 @@ export async function getStockPrice(
 ): Promise<StockPriceResponse> {
   const response = await apiClient.get<StockPriceResponse>(
     `/api/stocks/${encodeURIComponent(symbol)}/price`
+  );
+  return response.data;
+}
+
+/**
+ * Get user data by user ID hash
+ */
+export async function getUserData(
+  userIdHash: string
+): Promise<UserDataResponse> {
+  const response = await apiClient.get<UserDataResponse>(
+    `/api/user-data/${userIdHash}`
+  );
+  return response.data;
+}
+
+/**
+ * Save user data
+ */
+export async function saveUserData(
+  userIdHash: string,
+  request: UserDataSaveRequest
+): Promise<{ success: boolean; message?: string }> {
+  const response = await apiClient.put<{ success: boolean; message?: string }>(
+    `/api/user-data/${userIdHash}`,
+    request
   );
   return response.data;
 }

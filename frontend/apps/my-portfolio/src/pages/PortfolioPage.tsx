@@ -29,6 +29,8 @@ function PortfolioPage() {
     positionPnLs,
     sellSignals,
     isLoading,
+    isSyncing,
+    isInitialized,
     error,
     addPosition,
     addBuy,
@@ -37,7 +39,15 @@ function PortfolioPage() {
     setPositionPnLs,
     setLoading,
     setError,
+    loadFromServer,
   } = usePortfolioStore();
+
+  // Load data from server on mount
+  useEffect(() => {
+    if (!isInitialized) {
+      loadFromServer();
+    }
+  }, [isInitialized, loadFromServer]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [sellModalPosition, setSellModalPosition] = useState<PortfolioPosition | null>(null);
@@ -170,8 +180,12 @@ function PortfolioPage() {
         </div>
       )}
 
-      {isLoading && (
+      {(isLoading || !isInitialized) && (
         <div className="loading-indicator">데이터를 불러오는 중...</div>
+      )}
+
+      {isSyncing && (
+        <div className="syncing-indicator">저장 중...</div>
       )}
 
       <main className="page-content">
@@ -393,6 +407,19 @@ function PortfolioPage() {
           padding: 1rem 2rem;
           text-align: center;
           color: var(--color-text-secondary);
+        }
+
+        .syncing-indicator {
+          position: fixed;
+          bottom: 1rem;
+          right: 1rem;
+          padding: 0.5rem 1rem;
+          background-color: var(--color-primary);
+          color: white;
+          border-radius: var(--radius-md);
+          font-size: 0.875rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          z-index: 1000;
         }
 
         .page-content {

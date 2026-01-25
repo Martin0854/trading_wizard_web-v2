@@ -96,10 +96,17 @@ async def get_user_data(
     """
     validate_user_id_hash(user_id_hash)
 
-    result = await db.execute(
-        select(UserData).where(UserData.user_id_hash == user_id_hash)
-    )
-    user_data = result.scalar_one_or_none()
+    try:
+        result = await db.execute(
+            select(UserData).where(UserData.user_id_hash == user_id_hash)
+        )
+        user_data = result.scalar_one_or_none()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "DATABASE_ERROR", "message": "데이터베이스 오류가 발생했습니다."}
+        ) from e
 
     if user_data is None:
         raise HTTPException(
@@ -142,23 +149,30 @@ async def save_user_data(
             detail={"error": "INVALID_DATA", "message": "잘못된 데이터 형식입니다."}
         ) from e
 
-    # Check if user exists
-    result = await db.execute(
-        select(UserData).where(UserData.user_id_hash == user_id_hash)
-    )
-    existing = result.scalar_one_or_none()
-
-    if existing:
-        # Update existing
-        existing.encrypted_blob = encrypted_bytes
-    else:
-        # Create new
-        user_data = UserData(
-            user_id_hash=user_id_hash,
-            encrypted_blob=encrypted_bytes
+    try:
+        # Check if user exists
+        result = await db.execute(
+            select(UserData).where(UserData.user_id_hash == user_id_hash)
         )
-        db.add(user_data)
+        existing = result.scalar_one_or_none()
 
-    await db.commit()
+        if existing:
+            # Update existing
+            existing.encrypted_blob = encrypted_bytes
+        else:
+            # Create new
+            user_data = UserData(
+                user_id_hash=user_id_hash,
+                encrypted_blob=encrypted_bytes
+            )
+            db.add(user_data)
+
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "DATABASE_ERROR", "message": "데이터 저장 중 오류가 발생했습니다."}
+        ) from e
 
     return SuccessResponse(success=True, message="저장되었습니다.")

@@ -7,6 +7,18 @@ FROM node:20-alpine AS builder
 
 ARG APP_NAME
 
+# Build-time environment variables for Vite
+ARG VITE_PORTAL_URL=https://trading.kalee-dc.click
+ARG VITE_DAILY_FOCUS_URL=https://trading.kalee-dc.click/daily-focus
+ARG VITE_PORTFOLIO_URL=https://trading.kalee-dc.click/portfolio
+ARG VITE_API_URL=https://trading.kalee-dc.click
+
+# Set environment variables for Vite build
+ENV VITE_PORTAL_URL=$VITE_PORTAL_URL
+ENV VITE_DAILY_FOCUS_URL=$VITE_DAILY_FOCUS_URL
+ENV VITE_PORTFOLIO_URL=$VITE_PORTFOLIO_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 WORKDIR /app
 
 # Install pnpm
@@ -39,8 +51,14 @@ FROM nginx:alpine
 
 ARG APP_NAME
 
-# Copy nginx config
+# Copy nginx config (use app-specific config if exists, otherwise default)
 COPY deploy/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/docker/nginx-${APP_NAME}.conf* /tmp/
+
+# Use app-specific nginx config if it exists
+RUN if [ -f /tmp/nginx-${APP_NAME}.conf ]; then \
+      cp /tmp/nginx-${APP_NAME}.conf /etc/nginx/conf.d/default.conf; \
+    fi && rm -f /tmp/nginx-*.conf
 
 # Copy built files
 COPY --from=builder /app/frontend/apps/${APP_NAME}/dist /usr/share/nginx/html

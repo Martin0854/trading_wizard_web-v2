@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY backend/pyproject.toml backend/uv.lock ./
-RUN pip install uv && uv pip install --system -r pyproject.toml
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy shared module
 COPY shared/ /app/shared/
 
-# Copy backend code
-COPY backend/src/ /app/src/
+# Copy backend code (preserve backend/ directory structure for imports)
+COPY backend/src/ /app/backend/src/
 COPY backend/alembic.ini /app/
 
 # Set Python path
@@ -25,4 +25,4 @@ ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.src.main:app", "--host", "0.0.0.0", "--port", "8000"]

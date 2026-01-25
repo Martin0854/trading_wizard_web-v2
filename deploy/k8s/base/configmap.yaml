@@ -8,4 +8,4 @@ data:
   VITE_PORTAL_URL: "https://trading.kalee-dc.click"
   VITE_DAILY_FOCUS_URL: "https://trading.kalee-dc.click/daily-focus"
   VITE_PORTFOLIO_URL: "https://trading.kalee-dc.click/portfolio"
-  VITE_API_URL: "https://trading.kalee-dc.click/api"
+  VITE_API_URL: "https://trading.kalee-dc.click"

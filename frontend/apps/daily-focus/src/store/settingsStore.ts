@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { DailyFocusSettings, DecryptedUserData } from '@trading-wizard/shared-ui/types';
-import { createSettingsService, type SettingsService } from '@trading-wizard/shared-ui/services';
+import { createSettingsService, loadSession, type SettingsService } from '@trading-wizard/shared-ui/services';
 
 const DEFAULT_SETTINGS: DailyFocusSettings = {
   bollingerPeriod: 12,
@@ -28,16 +28,26 @@ function getSettingsService(): SettingsService {
   return settingsServiceInstance;
 }
 
+/**
+ * Get password/credentials from session's encryptedCredentials field
+ */
+function getSessionCredentials(): string | null {
+  const session = loadSession();
+  return session?.encryptedCredentials ?? null;
+}
+
 interface SettingsState {
   settings: DailyFocusSettings;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 
   setSettings: (settings: Partial<DailyFocusSettings>) => void;
   resetToDefaults: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  initializeFromSession: () => Promise<void>;
   authenticate: (password: string) => Promise<void>;
   loadSettings: () => Promise<void>;
   saveSettings: () => Promise<void>;
@@ -48,6 +58,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loading: false,
   error: null,
   isAuthenticated: false,
+  isInitialized: false,
 
   setSettings: (newSettings) =>
     set((state) => ({
@@ -59,6 +70,32 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
 
   setError: (error) => set({ error }),
+
+  initializeFromSession: async () => {
+    const { isInitialized } = get();
+    if (isInitialized) return;
+
+    const credentials = getSessionCredentials();
+    if (!credentials) {
+      set({ isInitialized: true });
+      return;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      const service = getSettingsService();
+      await service.initialize(credentials);
+      set({ isAuthenticated: true, loading: false, isInitialized: true });
+      // Auto-load settings after authentication
+      await get().loadSettings();
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : '자동 인증 실패',
+        loading: false,
+        isInitialized: true,
+      });
+    }
+  },
 
   authenticate: async (password: string) => {
     set({ loading: true, error: null });

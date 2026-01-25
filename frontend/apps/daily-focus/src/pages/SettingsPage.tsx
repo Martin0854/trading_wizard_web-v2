@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettingsStore } from '../store/settingsStore';
 import BollingerSettings from '../components/settings/BollingerSettings';
 import IndicatorSettings from '../components/settings/IndicatorSettings';
@@ -12,8 +12,10 @@ function SettingsPage() {
     loading,
     error,
     isAuthenticated,
+    isInitialized,
     setSettings,
     resetToDefaults,
+    initializeFromSession,
     authenticate,
     saveSettings,
     setError,
@@ -21,6 +23,13 @@ function SettingsPage() {
 
   const [password, setPassword] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Auto-authenticate from session on mount
+  useEffect(() => {
+    if (!isInitialized) {
+      initializeFromSession();
+    }
+  }, [isInitialized, initializeFromSession]);
 
   const handleAuthenticate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +59,19 @@ function SettingsPage() {
     }
   };
 
+  // Show loading while initializing from session
+  if (!isInitialized) {
+    return (
+      <div className="settings-page">
+        <div className="auth-section">
+          <LoadingSpinner />
+          <p>설정을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show password input only if session auth failed (e.g., no encryptedCredentials)
   if (!isAuthenticated) {
     return (
       <div className="settings-page">

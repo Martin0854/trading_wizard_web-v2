@@ -9,13 +9,19 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, Optional
+from typing import Protocol
 
 import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.data.kospi100 import get_kospi100_list
 from shared.data.persistent_cache import PersistentCacheClient, create_persistent_cache
+from shared.indicators import (
+    TechnicalIndicatorsResult,
+    calculate_all_indicators,
+    check_buy_signal,
+)
+from shared.types.models import BollingerBands, MACDIndicator, Stock, TechnicalIndicators
 
 
 class StockDataClient(Protocol):
@@ -23,7 +29,7 @@ class StockDataClient(Protocol):
 
     def get_price_history(
         self, symbol: str, period: str, validate: bool = True
-    ) -> Optional[pd.DataFrame]:
+    ) -> pd.DataFrame | None:
         ...
 
 
@@ -35,14 +41,6 @@ def _create_stock_client() -> StockDataClient:
     except ImportError:
         from shared.data.yfinance_client import YFinanceClient
         return YFinanceClient()
-
-
-from shared.indicators import (
-    TechnicalIndicatorsResult,
-    calculate_all_indicators,
-    check_buy_signal,
-)
-from shared.types.models import BollingerBands, MACDIndicator, Stock, TechnicalIndicators
 
 logger = logging.getLogger(__name__)
 

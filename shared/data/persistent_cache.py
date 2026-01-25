@@ -1,7 +1,7 @@
 """Two-tier persistent cache for stock price data.
 
 Architecture:
-    Request -> Redis (L1, fast) -> PostgreSQL (L2, persistent) -> yfinance API
+    Request -> Redis (L1, fast) -> PostgreSQL (L2, persistent) -> KRX/yfinance API
 
 L1 Cache (Redis):
     - 1 hour TTL
@@ -12,12 +12,16 @@ L2 Cache (PostgreSQL):
     - 7 day retention
     - Survives server restarts
     - Restores L1 cache on miss
+
+Data Source:
+    - KRX (pykrx) for Korean stocks - more reliable, no rate limiting
+    - yfinance as fallback
 """
 
 import asyncio
 import logging
 from datetime import date
-from typing import Optional
+from typing import Optional, Protocol
 
 import pandas as pd
 from sqlalchemy import delete, select
@@ -31,7 +35,30 @@ from shared.data.cache_strategy import (
     now_kst,
     should_refresh_history,
 )
-from shared.data.yfinance_client import YFinanceClient
+
+
+class StockDataClient(Protocol):
+    """Protocol for stock data clients (KRX, yfinance, etc.)."""
+
+    def get_price_history(
+        self, symbol: str, period: str, validate: bool = True
+    ) -> Optional[pd.DataFrame]:
+        """Get historical OHLCV data."""
+        ...
+
+
+def _create_default_client() -> StockDataClient:
+    """Create default stock data client.
+
+    Prefers KRXClient for Korean stocks (more reliable).
+    Falls back to YFinanceClient if pykrx is not available.
+    """
+    try:
+        from shared.data.krx_client import KRXClient
+        return KRXClient()
+    except ImportError:
+        from shared.data.yfinance_client import YFinanceClient
+        return YFinanceClient()
 
 logger = logging.getLogger(__name__)
 
@@ -46,25 +73,25 @@ class PersistentCacheClient:
     """Two-tier cache client for stock price history.
 
     Uses Redis as L1 cache and PostgreSQL as L2 persistent storage.
-    Falls back to yfinance API when both caches miss.
+    Falls back to KRX (pykrx) or yfinance API when both caches miss.
     """
 
     def __init__(
         self,
         db_session: AsyncSession,
         redis_client: Optional[CacheClient] = None,
-        yfinance_client: Optional[YFinanceClient] = None,
+        stock_client: Optional[StockDataClient] = None,
     ):
         """Initialize persistent cache client.
 
         Args:
             db_session: SQLAlchemy async session for PostgreSQL
             redis_client: Optional Redis cache client (L1)
-            yfinance_client: Optional yfinance client for API calls
+            stock_client: Optional stock data client (KRX or yfinance)
         """
         self._db = db_session
         self._redis = redis_client
-        self._yfinance = yfinance_client or YFinanceClient()
+        self._stock_client = stock_client or _create_default_client()
 
     async def get_price_history(
         self,
@@ -110,9 +137,9 @@ class PersistentCacheClient:
                     self._save_to_redis(cache_key, df)
                     return df
 
-        # Cache miss: fetch from yfinance
-        logger.info(f"Cache miss for {symbol}, fetching from yfinance")
-        df = await self._fetch_from_yfinance(symbol, period)
+        # Cache miss: fetch from stock data API (KRX or yfinance)
+        logger.info(f"Cache miss for {symbol}, fetching from API")
+        df = await self._fetch_from_api(symbol, period)
 
         if df is not None and not df.empty:
             # Save to both caches
@@ -139,6 +166,7 @@ class PersistentCacheClient:
                 }
         except Exception as e:
             logger.warning(f"Error getting cache metadata for {symbol}: {e}")
+            await self._db.rollback()
         return None
 
     async def _load_from_postgres(
@@ -185,6 +213,7 @@ class PersistentCacheClient:
 
         except Exception as e:
             logger.error(f"Error loading from PostgreSQL for {symbol}: {e}")
+            await self._db.rollback()
             return None
 
     async def _save_to_postgres(self, symbol: str, df: pd.DataFrame) -> None:
@@ -262,22 +291,22 @@ class PersistentCacheClient:
         except Exception as e:
             logger.warning(f"Error saving to Redis: {e}")
 
-    async def _fetch_from_yfinance(
+    async def _fetch_from_api(
         self,
         symbol: str,
         period: str,
     ) -> Optional[pd.DataFrame]:
-        """Fetch price history from yfinance API."""
+        """Fetch price history from stock data API (KRX or yfinance)."""
         try:
             df = await asyncio.to_thread(
-                self._yfinance.get_price_history,
+                self._stock_client.get_price_history,
                 symbol,
                 period,
-                validate=True,
+                True,  # validate
             )
             return df
         except Exception as e:
-            logger.error(f"Error fetching from yfinance for {symbol}: {e}")
+            logger.error(f"Error fetching from API for {symbol}: {e}")
             return None
 
     async def cleanup_old_data(self, retention_days: int = L2_RETENTION_DAYS) -> int:

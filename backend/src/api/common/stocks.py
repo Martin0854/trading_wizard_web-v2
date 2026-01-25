@@ -10,12 +10,22 @@ from pydantic import BaseModel
 
 from shared.data.kospi100 import get_kospi100_stocks
 from shared.data.kospi100 import search_stocks as search_kospi
-from shared.data.yfinance_client import YFinanceClient
 
 router = APIRouter()
 
-# Create yfinance client (without cache for now - can be injected later)
-yf_client = YFinanceClient()
+
+def _get_stock_client():
+    """Get stock data client (KRX preferred, yfinance fallback)."""
+    try:
+        from shared.data.krx_client import KRXClient
+        return KRXClient()
+    except ImportError:
+        from shared.data.yfinance_client import YFinanceClient
+        return YFinanceClient()
+
+
+# Create stock client (KRX preferred for Korean stocks)
+stock_client = _get_stock_client()
 
 
 class StockResponse(BaseModel):
@@ -119,9 +129,9 @@ async def get_kospi100_list() -> StockListResponse:
 async def get_stock_price(symbol: str) -> StockPriceResponse:
     """Get current stock price.
 
-    Fetches real-time price from yfinance with caching.
+    Fetches price from KRX (pykrx) or yfinance with caching.
     """
-    response = yf_client.get_current_price(symbol)
+    response = stock_client.get_current_price(symbol)
 
     if response is None:
         raise HTTPException(

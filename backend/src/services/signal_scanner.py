@@ -1,19 +1,42 @@
 """Signal scanner service for Daily Focus Wizard.
 
 Scans KOSPI Top 100 stocks for buy signals based on Bollinger Band squeeze strategy.
-Uses two-tier caching (Redis + PostgreSQL) to minimize yfinance API calls.
+Uses two-tier caching (Redis + PostgreSQL) to minimize API calls.
+Data source: KRX (pykrx) for Korean stocks - more reliable than yfinance.
 """
 
 import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Protocol, Optional
 
+import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.data.kospi100 import get_kospi100_list
 from shared.data.persistent_cache import PersistentCacheClient, create_persistent_cache
-from shared.data.yfinance_client import YFinanceClient
+
+
+class StockDataClient(Protocol):
+    """Protocol for stock data clients."""
+
+    def get_price_history(
+        self, symbol: str, period: str, validate: bool = True
+    ) -> Optional[pd.DataFrame]:
+        ...
+
+
+def _create_stock_client() -> StockDataClient:
+    """Create stock data client (KRX preferred, yfinance fallback)."""
+    try:
+        from shared.data.krx_client import KRXClient
+        return KRXClient()
+    except ImportError:
+        from shared.data.yfinance_client import YFinanceClient
+        return YFinanceClient()
+
+
 from shared.indicators import (
     TechnicalIndicatorsResult,
     calculate_all_indicators,
@@ -107,14 +130,14 @@ async def scan_for_buy_signals(
     """
     stocks = get_kospi100_list()
 
-    # Use persistent cache if db_session provided, otherwise fallback to YFinanceClient
+    # Use persistent cache if db_session provided, otherwise fallback to stock client
     cache_client = None
-    yfinance_client = None
+    stock_client = None
     if db_session:
         cache_client = await create_persistent_cache(db_session)
     else:
-        yfinance_client = YFinanceClient()
-        logger.warning("No db_session provided, using uncached YFinanceClient")
+        stock_client = _create_stock_client()
+        logger.warning("No db_session provided, using uncached stock client")
 
     recommendations: list[BuyRecommendation] = []
     scanned_count = 0
@@ -127,9 +150,10 @@ async def scan_for_buy_signals(
                 data = await cache_client.get_price_history(symbol, period="3mo")
             else:
                 data = await asyncio.to_thread(
-                    yfinance_client.get_price_history,
+                    stock_client.get_price_history,
                     symbol,
-                    period="3mo"
+                    "3mo",
+                    True,
                 )
             if data is None or data.empty:
                 continue
@@ -239,12 +263,12 @@ async def get_stock_detail(
 
     # Use persistent cache if db_session provided
     cache_client = None
-    yfinance_client = None
+    stock_client = None
     if db_session:
         cache_client = await create_persistent_cache(db_session)
     else:
-        yfinance_client = YFinanceClient()
-        logger.warning("No db_session provided, using uncached YFinanceClient")
+        stock_client = _create_stock_client()
+        logger.warning("No db_session provided, using uncached stock client")
 
     try:
         # Fetch historical data (cached)
@@ -252,9 +276,10 @@ async def get_stock_detail(
             data = await cache_client.get_price_history(symbol, period="3mo")
         else:
             data = await asyncio.to_thread(
-                yfinance_client.get_price_history,
+                stock_client.get_price_history,
                 symbol,
-                period="3mo"
+                "3mo",
+                True,
             )
         if data is None or data.empty:
             return None

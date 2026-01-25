@@ -5,9 +5,11 @@ Implements Constitution III requirements:
 - Request Throttling: Token bucket rate limiting (2000 req/hr)
 - Batch Processing: Support for KOSPI 100 batch fetching
 - Graceful Degradation: Error messages on failure
+- Retry Logic: Exponential backoff for transient failures
 """
 
 import logging
+import random
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -29,15 +31,76 @@ from shared.types.models import Market, Stock
 
 logger = logging.getLogger(__name__)
 
+# Retry configuration
+MAX_RETRIES = 3
+BASE_DELAY = 2.0  # Base delay in seconds (increased for 429 errors)
+MAX_DELAY = 30.0  # Maximum delay in seconds (increased for 429 errors)
+
+# Rate limiting configuration - conservative to avoid 429
+MIN_REQUEST_INTERVAL = 2.0  # Minimum 2 seconds between requests
+
+
+def is_rate_limit_error(error: Exception) -> bool:
+    """Check if the error is a rate limit (429) error."""
+    error_str = str(error).lower()
+    return "429" in error_str or "too many requests" in error_str or "rate limit" in error_str
+
+
+def retry_with_backoff(
+    max_retries: int = MAX_RETRIES,
+    base_delay: float = BASE_DELAY,
+    max_delay: float = MAX_DELAY,
+):
+    """Decorator for retry with exponential backoff.
+
+    Args:
+        max_retries: Maximum number of retry attempts
+        base_delay: Base delay between retries in seconds
+        max_delay: Maximum delay between retries in seconds
+    """
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < max_retries:
+                        # Use longer delay for rate limit errors
+                        if is_rate_limit_error(e):
+                            delay = min(base_delay * (3 ** attempt), max_delay)  # More aggressive backoff for 429
+                            logger.warning(
+                                f"Rate limit hit (429) for {func.__name__}. "
+                                f"Waiting {delay:.1f}s before retry {attempt + 2}/{max_retries + 1}..."
+                            )
+                        else:
+                            delay = min(base_delay * (2 ** attempt), max_delay)
+                            logger.warning(
+                                f"Attempt {attempt + 1}/{max_retries + 1} failed for {func.__name__}: {e}. "
+                                f"Retrying in {delay:.2f}s..."
+                            )
+                        jitter = random.uniform(0, delay * 0.1)
+                        time.sleep(delay + jitter)
+                    else:
+                        logger.error(
+                            f"All {max_retries + 1} attempts failed for {func.__name__}: {e}"
+                        )
+            raise last_exception
+        return wrapper
+    return decorator
+
 
 @dataclass
 class RateLimiter:
-    """Token bucket rate limiter for API calls."""
+    """Token bucket rate limiter for API calls with minimum interval enforcement."""
 
-    max_tokens: int = 2000  # Max requests per hour
-    refill_rate: float = 2000 / 3600  # Tokens per second
-    tokens: float = 2000
+    max_tokens: int = 100  # Max requests per hour (reduced from 2000 to be conservative)
+    refill_rate: float = 100 / 3600  # Tokens per second
+    tokens: float = 100
     last_refill: float = field(default_factory=time.time)
+    last_request: float = field(default_factory=lambda: 0.0)
+    min_interval: float = MIN_REQUEST_INTERVAL  # Minimum seconds between requests
     lock: Lock = field(default_factory=Lock)
 
     def acquire(self, tokens: int = 1) -> bool:
@@ -61,13 +124,25 @@ class RateLimiter:
             return False
 
     def wait_for_token(self, tokens: int = 1) -> None:
-        """Wait until tokens are available.
+        """Wait until tokens are available and minimum interval has passed.
 
         Args:
             tokens: Number of tokens needed
         """
+        with self.lock:
+            # Enforce minimum interval between requests
+            now = time.time()
+            time_since_last = now - self.last_request
+            if time_since_last < self.min_interval:
+                sleep_time = self.min_interval - time_since_last
+                time.sleep(sleep_time)
+
         while not self.acquire(tokens):
             time.sleep(0.1)
+
+        # Update last request time
+        with self.lock:
+            self.last_request = time.time()
 
 
 @dataclass
@@ -137,8 +212,13 @@ class YFinanceClient:
         self._rate_limiter.wait_for_token()
 
         try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
+            # Use retry wrapper for yfinance API call
+            @retry_with_backoff()
+            def fetch_ticker_info():
+                ticker = yf.Ticker(symbol)
+                return ticker.info
+
+            info = fetch_ticker_info()
 
             # Extract price data
             current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
@@ -184,7 +264,7 @@ class YFinanceClient:
             )
 
         except Exception as e:
-            logger.error(f"Error fetching price for {symbol}: {e}")
+            logger.error(f"Error fetching price for {symbol} after retries: {e}")
             return None
 
     def get_price_history(
@@ -218,8 +298,13 @@ class YFinanceClient:
         self._rate_limiter.wait_for_token()
 
         try:
-            ticker = yf.Ticker(symbol)
-            df = ticker.history(period=period)
+            # Use retry wrapper for yfinance API call
+            @retry_with_backoff()
+            def fetch_ticker_history():
+                ticker = yf.Ticker(symbol)
+                return ticker.history(period=period)
+
+            df = fetch_ticker_history()
 
             if df.empty:
                 logger.warning(f"No history data for {symbol}")
@@ -240,7 +325,7 @@ class YFinanceClient:
             return df
 
         except Exception as e:
-            logger.error(f"Error fetching history for {symbol}: {e}")
+            logger.error(f"Error fetching history for {symbol} after retries: {e}")
             return None
 
     def get_multiple_prices(

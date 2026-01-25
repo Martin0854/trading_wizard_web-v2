@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header, Footer, SessionGuard } from '@trading-wizard/shared-ui';
-import { getPortalUrl, getMyPortfolioUrl } from '@trading-wizard/shared-ui/services';
+import { getPortalUrl } from '@trading-wizard/shared-ui/services';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/SettingsPage';
 import { useDailyFocusStore } from './store/dailyFocusStore';
@@ -9,15 +9,14 @@ function App() {
   const { dataFreshness } = useDailyFocusStore();
 
   const navLinks = [
-    { label: '매수 추천', href: '/' },
-    { label: '설정', href: '/settings' },
-    { label: 'My Portfolio', href: getMyPortfolioUrl(), external: true },
+    { label: '매수 추천', href: '/daily-focus' },
+    { label: '설정', href: '/daily-focus/settings' },
     { label: '포털', href: getPortalUrl(), external: true },
   ];
 
   return (
     <SessionGuard>
-      <BrowserRouter>
+      <BrowserRouter basename="/daily-focus">
         <div className="app-container">
           <Header
             title="Daily Focus Wizard"

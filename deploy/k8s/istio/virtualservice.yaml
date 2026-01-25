@@ -19,24 +19,20 @@ spec:
             port:
               number: 8000
 
-    # Daily Focus app
+    # Daily Focus app (assets served from /daily-focus/*)
     - match:
         - uri:
             prefix: /daily-focus
-      rewrite:
-        uri: /
       route:
         - destination:
             host: daily-focus
             port:
               number: 80
 
-    # My Portfolio app
+    # My Portfolio app (assets served from /portfolio/*)
     - match:
         - uri:
             prefix: /portfolio
-      rewrite:
-        uri: /
       route:
         - destination:
             host: my-portfolio

@@ -1,7 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Header, Footer, SessionGuard } from '@trading-wizard/shared-ui/components';
 import type { NavLink } from '@trading-wizard/shared-ui/components';
-import { getPortalUrl, getDailyFocusUrl } from '@trading-wizard/shared-ui/services';
+import { getPortalUrl } from '@trading-wizard/shared-ui/services';
 import PortfolioPage from './pages/PortfolioPage';
 import SettingsPage from './pages/SettingsPage';
 import { usePortfolioStore } from './store/portfolioStore';
@@ -14,17 +14,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     {
       label: '포트폴리오',
       href: '/portfolio',
-      active: location.pathname === '/portfolio',
+      active: location.pathname === '/portfolio' || location.pathname === '/',
     },
     {
       label: '설정',
-      href: '/settings',
+      href: '/portfolio/settings',
       active: location.pathname === '/settings',
-    },
-    {
-      label: 'Daily Focus',
-      href: getDailyFocusUrl(),
-      active: false,
     },
     {
       label: '포털',
@@ -36,7 +31,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header
-        title="My Portfolio"
+        title="My Portfolio Wizard"
         navLinks={navLinks}
         dataFreshness={lastUpdated ?? undefined}
       />
@@ -51,11 +46,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <SessionGuard>
-      <BrowserRouter>
+      <BrowserRouter basename="/portfolio">
         <Routes>
-          <Route path="/" element={<Navigate to="/portfolio" replace />} />
           <Route
-            path="/portfolio"
+            path="/"
             element={
               <AppLayout>
                 <PortfolioPage />

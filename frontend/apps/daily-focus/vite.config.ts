@@ -4,6 +4,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/daily-focus/',
   plugins: [react()],
   server: {
     port: 3001,

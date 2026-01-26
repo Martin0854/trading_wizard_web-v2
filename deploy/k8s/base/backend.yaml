@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: splkm97/trading-wizard-backend:80b23c4
+          image: splkm97/trading-wizard-backend:dc7398c
           ports:
             - containerPort: 8000
           envFrom:

@@ -21,9 +21,11 @@ def _get_stock_client():
     """Get stock data client (KRX preferred, yfinance fallback)."""
     try:
         from shared.data.krx_client import KRXClient
+
         return KRXClient()
     except ImportError:
         from shared.data.yfinance_client import YFinanceClient
+
         return YFinanceClient()
 
 
@@ -37,6 +39,7 @@ def _get_client():
         _stock_client = _get_stock_client()
     return _stock_client
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -44,6 +47,7 @@ router = APIRouter()
 
 class PositionInput(BaseModel):
     """Input position data."""
+
     id: str
     symbol: str
     avg_buy_price: float = Field(alias="avgBuyPrice", gt=0)
@@ -54,6 +58,7 @@ class PositionInput(BaseModel):
 
 class SettingsInput(BaseModel):
     """Optional settings for sell signal calculation."""
+
     stop_loss_pct: float = Field(default=-4.5, alias="stopLossPct", ge=-20, le=0)
     take_profit_pct: float = Field(default=12.0, alias="takeProfitPct", ge=0, le=100)
     sell_on_middle_band: bool = Field(default=False, alias="sellOnMiddleBand")
@@ -65,12 +70,14 @@ class SettingsInput(BaseModel):
 
 class SellSignalRequest(BaseModel):
     """Request body for sell signals endpoint."""
+
     positions: list[PositionInput]
     settings: SettingsInput | None = None
 
 
 class SellSignalResponse(BaseModel):
     """Response for a single sell signal."""
+
     position_id: str = Field(alias="positionId")
     type: SellSignalType
     reason: str
@@ -89,12 +96,13 @@ class SellSignalResponse(BaseModel):
             reason=signal.reason,
             current_price=signal.current_price,
             pnl_percent=signal.pnl_percent,
-            trigger_value=signal.trigger_value
+            trigger_value=signal.trigger_value,
         )
 
 
 class SellSignalListResponse(BaseModel):
     """Response body for sell signals endpoint."""
+
     signals: list[SellSignalResponse]
     calculated_at: datetime = Field(alias="calculatedAt")
 
@@ -121,7 +129,7 @@ async def get_sell_signals(request: SellSignalRequest) -> SellSignalListResponse
         take_profit_pct=settings_input.take_profit_pct,
         sell_on_middle_band=settings_input.sell_on_middle_band,
         bollinger_period=settings_input.bollinger_period,
-        bollinger_std_dev=settings_input.bollinger_std_dev
+        bollinger_std_dev=settings_input.bollinger_std_dev,
     )
 
     all_signals: list[SellSignalResponse] = []
@@ -141,7 +149,7 @@ async def get_sell_signals(request: SellSignalRequest) -> SellSignalListResponse
             if settings.sell_on_middle_band:
                 history = client.get_price_history(
                     position.symbol,
-                    period="1mo"  # 1 month for Bollinger calculation
+                    period="1mo",  # 1 month for Bollinger calculation
                 )
                 if history is not None and "Close" in history.columns:
                     prices = history["Close"]
@@ -149,11 +157,11 @@ async def get_sell_signals(request: SellSignalRequest) -> SellSignalListResponse
             # Generate signals
             signals = generate_sell_signals(
                 position_id=position.id,
-                symbol=position.symbol,
+                _symbol=position.symbol,
                 avg_buy_price=position.avg_buy_price,
                 current_price=current_price,
                 prices=prices,
-                settings=settings
+                settings=settings,
             )
 
             # Convert to response format
@@ -165,7 +173,4 @@ async def get_sell_signals(request: SellSignalRequest) -> SellSignalListResponse
             logger.warning("Error processing position %s: %s", position.id, e)
             continue
 
-    return SellSignalListResponse(
-        signals=all_signals,
-        calculated_at=datetime.now()
-    )
+    return SellSignalListResponse(signals=all_signals, calculated_at=datetime.now())

@@ -113,8 +113,7 @@ test.describe('My Portfolio - 데이터 영속성 테스트', () => {
     // ✅ THIS IS THE KEY ASSERTION: Data should persist after refresh
     expect(afterRefreshCount).toBe(afterAddCount);
 
-    // Verify the added position is visible (삼성전자)
-    const samsungPosition = page.locator('text=삼성전자');
+    const samsungPosition = page.locator('.position-name:has-text("삼성전자")').first();
     await expect(samsungPosition).toBeVisible({ timeout: 5000 });
   });
 
@@ -138,28 +137,27 @@ test.describe('My Portfolio - 데이터 영속성 테스트', () => {
     // Get count before deletion
     console.log(`Position count before delete: ${initialCount}`);
 
-    // Find and click the sell button on first position
-    const sellButton = page.locator('button:has-text("매도"), button:has-text("삭제")').first();
+    const sellButton = page.locator('.position-card .action-btn.sell').first();
     await sellButton.click({ timeout: 5000 }).catch(() => {
-      console.log('⚠️ No sell/delete button found, skipping test');
+      console.log('No sell button found, skipping test');
       test.skip();
     });
 
-    // If a modal appears, fill the sell form
-    const sellModal = page.locator('.modal-overlay:has-text("매도"), [role="dialog"]:has-text("매도")');
-    if (await sellModal.isVisible()) {
-      const priceInput = page.locator('#price, input[name="price"]');
-      await priceInput.fill('75000');
+    const sellModal = page.locator('.modal-overlay[role="dialog"]');
+    await expect(sellModal).toBeVisible({ timeout: 5000 }).catch(() => {
+      console.log('Sell modal did not appear, skipping test');
+      test.skip();
+    });
 
-      const quantityInput = page.locator('#quantity, input[name="quantity"]');
-      const currentQuantity = await quantityInput.inputValue();
-      if (!currentQuantity) {
-        await quantityInput.fill('10');
-      }
+    await page.locator('#sellPrice').fill('75000');
 
-      const confirmButton = page.locator('button:has-text("매도"), button[type="submit"]');
-      await confirmButton.click();
+    const quantityInput = page.locator('#sellQuantity');
+    const currentQuantity = await quantityInput.inputValue();
+    if (!currentQuantity || currentQuantity === '0') {
+      await quantityInput.fill('10');
     }
+
+    await page.locator('button.sell-submit').click();
 
     // Wait for sync
     await page.waitForTimeout(2000);

@@ -75,8 +75,6 @@ __all__ = [
     "calculate_confidence_score_breakdown",
     "generate_signal_reason",
     "is_above_threshold",
-    "generate_signal_reason",
-    "is_above_threshold",
     # Trend
     "calculate_trend_status",
     # Facade
@@ -87,13 +85,6 @@ __all__ = [
 ]
 
 
-@dataclass
-class TechnicalIndicatorsResult:
-    """Complete technical indicators for a stock."""
-    bollinger: BollingerBandsResult
-    rsi: float
-    macd: MACDResult
-    volume_ratio: float
 @dataclass
 class TechnicalIndicatorsResult:
     """Complete technical indicators for a stock."""
@@ -156,9 +147,6 @@ def calculate_all_indicators(
         bollinger_period + bb_width_ma_period,
         rsi_period + 1,
         macd_slow + macd_signal,
-        bollinger_period + bb_width_ma_period,
-        rsi_period + 1,
-        macd_slow + macd_signal,
         volume_avg_period,
         trend_lookback_days
     )
@@ -198,22 +186,7 @@ def calculate_all_indicators(
         return None
 
     # Calculate Trend Status
-    # We need the full middle band series, which calculate_bollinger_bands computes internally.
-    # Optimization: calculate_bollinger_bands could return the series, but currently returns a Result object with only latest values.
-    # To avoid re-calculating, ideally we'd get the series. 
-    # But calculate_bollinger_bands is internal. Let's look at it.
-    # It returns BollingerBandsResult (scalars).
-    # So we must re-calculate the middle band or modify calculate_bollinger_bands to return series.
-    # Or, since we have the prices here, just calculate middle band (SMA) quickly for trend.
-    trend_ma = prices.rolling(window=20).mean() # Standard 20-day MA for trend, often same as bollinger_period=20
-    # Ideally should use bollinger_period if that's the intention, but trend.py default is 20.
-    # Let's use bollinger_period for the MA if it matches 'trend logic', 
-    # but the requirement was "20-day MA". If bollinger is 12, trend might still be 20? 
-    # User said "20일 이동평균선(볼린저 중간선)". If bollinger period changes, this reference changes.
-    # Let's assume the 'middle band' for trend analysis is the same as the bollinger middle band.
-    # So we use bollinger_period.
-    
-    # We need to re-calculate the middle band series here as it's not exposed by calculate_bollinger_bands
+    # Re-calculate middle band series for trend analysis (not exposed by calculate_bollinger_bands)
     middle_band_series = prices.rolling(window=bollinger_period).mean()
     
     is_correction = calculate_trend_status(

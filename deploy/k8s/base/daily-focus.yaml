@@ -17,9 +17,12 @@ spec:
     spec:
       containers:
         - name: daily-focus
-          image: splkm97/trading-wizard-daily-focus:80b23c4
+          image: splkm97/trading-wizard-daily-focus:a691754
           ports:
             - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: trading-wizard-config
           resources:
             requests:
               memory: "64Mi"

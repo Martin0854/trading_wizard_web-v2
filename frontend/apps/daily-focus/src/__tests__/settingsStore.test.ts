@@ -17,6 +17,9 @@ const DEFAULT_SETTINGS = {
   macdSlow: 26,
   macdSignal: 9,
   volumeAvgPeriod: 20,
+  trendLookbackDays: 20,
+  trendBelowMaThreshold: 15,
+  trendMaSlopeLookback: 10,
 };
 
 describe('settingsStore', () => {

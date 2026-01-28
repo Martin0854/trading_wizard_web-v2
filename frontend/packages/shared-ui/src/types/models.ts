@@ -79,6 +79,7 @@ export interface TechnicalIndicators {
   rsi: number;           // 0-100
   macd: MACDIndicator;
   volumeRatio: number;   // Today's volume / 20-day average volume
+  isCorrectionTrend: boolean;
   calculatedAt: string;
 }
 
@@ -149,6 +150,11 @@ export interface DailyFocusSettings {
 
   // Volume
   volumeAvgPeriod: number;      // default: 20
+
+  // Trend Detection
+  trendLookbackDays: number;    // default: 20
+  trendBelowMaThreshold: number; // default: 15
+  trendMaSlopeLookback: number; // default: 10
 }
 
 export interface PortfolioSettings {
@@ -172,6 +178,9 @@ export const DEFAULT_DAILY_FOCUS_SETTINGS: DailyFocusSettings = {
   macdSlow: 26,
   macdSignal: 9,
   volumeAvgPeriod: 20,
+  trendLookbackDays: 20,
+  trendBelowMaThreshold: 15,
+  trendMaSlopeLookback: 10,
 };
 
 export const DEFAULT_PORTFOLIO_SETTINGS: PortfolioSettings = {

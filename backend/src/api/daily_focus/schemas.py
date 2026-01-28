@@ -26,6 +26,7 @@ class TechnicalIndicatorsResponse(BaseModel):
     rsi: float
     macd: MACDIndicatorResponse
     volumeRatio: float
+    isCorrectionTrend: bool
     calculatedAt: datetime
 
 

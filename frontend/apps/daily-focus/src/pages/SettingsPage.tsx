@@ -3,6 +3,7 @@ import { useSettingsStore } from '../store/settingsStore';
 import BollingerSettings from '../components/settings/BollingerSettings';
 import IndicatorSettings from '../components/settings/IndicatorSettings';
 import ConfidenceSettings from '../components/settings/ConfidenceSettings';
+import TrendSettings from '../components/settings/TrendSettings';
 import { LoadingSpinner, ErrorMessage } from '@trading-wizard/shared-ui';
 import './SettingsPage.css';
 
@@ -136,6 +137,7 @@ function SettingsPage() {
 
       <BollingerSettings settings={settings} onChange={setSettings} />
       <IndicatorSettings settings={settings} onChange={setSettings} />
+      <TrendSettings settings={settings} onChange={setSettings} />
       <ConfidenceSettings settings={settings} onChange={setSettings} />
     </div>
   );

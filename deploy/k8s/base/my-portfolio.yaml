@@ -17,9 +17,12 @@ spec:
     spec:
       containers:
         - name: my-portfolio
-          image: splkm97/trading-wizard-my-portfolio:579c3ff
+          image: splkm97/trading-wizard-my-portfolio:a691754
           ports:
             - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: trading-wizard-config
           resources:
             requests:
               memory: "64Mi"

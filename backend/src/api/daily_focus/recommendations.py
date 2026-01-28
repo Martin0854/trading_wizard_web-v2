@@ -36,6 +36,9 @@ class ParametersResponse(BaseModel):
     bollingerPeriod: int
     bollingerStdDev: float
     confidenceThreshold: float
+    trendLookbackDays: int
+    trendBelowMaThreshold: int
+    trendMaSlopeLookback: int
 
 
 class RecommendationsListResponse(BaseModel):
@@ -54,6 +57,9 @@ async def get_recommendations(
     confidence_threshold: float = Query(55.0, ge=0, le=100, alias="confidence_threshold"),
     bollinger_period: int = Query(12, ge=5, le=50, alias="bollinger_period"),
     bollinger_std_dev: float = Query(1.3, ge=0.5, le=3.0, alias="bollinger_std_dev"),
+    trend_lookback_days: int = Query(20, ge=5, le=60, alias="trend_lookback_days"),
+    trend_below_ma_threshold: int = Query(15, ge=1, le=60, alias="trend_below_ma_threshold"),
+    trend_ma_slope_lookback: int = Query(10, ge=1, le=30, alias="trend_ma_slope_lookback"),
     db: AsyncSession = Depends(get_db),
 ) -> RecommendationsListResponse:
     """Get buy recommendations based on Bollinger Band squeeze strategy.
@@ -66,6 +72,9 @@ async def get_recommendations(
             confidence_threshold=confidence_threshold,
             bollinger_period=bollinger_period,
             bollinger_std_dev=bollinger_std_dev,
+            trend_lookback_days=trend_lookback_days,
+            trend_below_ma_threshold=trend_below_ma_threshold,
+            trend_ma_slope_lookback=trend_ma_slope_lookback,
             db_session=db,
         )
 
@@ -102,6 +111,7 @@ async def get_recommendations(
                         histogram=rec.indicators.macd.histogram,
                     ),
                     volumeRatio=rec.indicators.volume_ratio,
+                    isCorrectionTrend=rec.indicators.is_correction_trend,
                     calculatedAt=rec.indicators.calculated_at,
                 ),
                 generatedAt=rec.generated_at,
@@ -115,6 +125,9 @@ async def get_recommendations(
                 bollingerPeriod=result.parameters["bollingerPeriod"],
                 bollingerStdDev=result.parameters["bollingerStdDev"],
                 confidenceThreshold=result.parameters["confidenceThreshold"],
+                trendLookbackDays=trend_lookback_days,
+                trendBelowMaThreshold=trend_below_ma_threshold,
+                trendMaSlopeLookback=trend_ma_slope_lookback,
             ),
         )
 

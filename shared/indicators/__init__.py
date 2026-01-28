@@ -43,6 +43,7 @@ from shared.indicators.volume import (
     is_volume_above_average,
     is_volume_spike,
 )
+from shared.indicators.trend import calculate_trend_status
 
 # Re-export individual module functions
 __all__ = [
@@ -74,6 +75,8 @@ __all__ = [
     "calculate_confidence_score_breakdown",
     "generate_signal_reason",
     "is_above_threshold",
+    # Trend
+    "calculate_trend_status",
     # Facade
     "TechnicalIndicatorsResult",
     "BuySignalResult",
@@ -89,6 +92,7 @@ class TechnicalIndicatorsResult:
     rsi: float
     macd: MACDResult
     volume_ratio: float
+    is_correction_trend: bool
     calculated_at: datetime
 
 
@@ -114,7 +118,10 @@ def calculate_all_indicators(
     macd_fast: int = 12,
     macd_slow: int = 26,
     macd_signal: int = 9,
-    volume_avg_period: int = 20
+    volume_avg_period: int = 20,
+    trend_lookback_days: int = 20,
+    trend_below_ma_threshold: int = 15,
+    trend_ma_slope_lookback: int = 10
 ) -> Optional[TechnicalIndicatorsResult]:
     """Calculate all technical indicators for a stock.
 
@@ -140,7 +147,8 @@ def calculate_all_indicators(
         bollinger_period + bb_width_ma_period,
         rsi_period + 1,
         macd_slow + macd_signal,
-        volume_avg_period
+        volume_avg_period,
+        trend_lookback_days
     )
     if len(prices) < min_periods or len(volumes) < min_periods:
         return None
@@ -177,11 +185,24 @@ def calculate_all_indicators(
     if volume_ratio is None:
         return None
 
+    # Calculate Trend Status
+    # Re-calculate middle band series for trend analysis (not exposed by calculate_bollinger_bands)
+    middle_band_series = prices.rolling(window=bollinger_period).mean()
+    
+    is_correction = calculate_trend_status(
+        prices=prices,
+        middle_band=middle_band_series,
+        trend_lookback_days=trend_lookback_days,
+        trend_below_ma_threshold=trend_below_ma_threshold,
+        trend_ma_slope_lookback=trend_ma_slope_lookback
+    )
+
     return TechnicalIndicatorsResult(
         bollinger=bollinger,
         rsi=rsi,
         macd=macd,
         volume_ratio=volume_ratio,
+        is_correction_trend=is_correction,
         calculated_at=datetime.now()
     )
 
@@ -222,7 +243,9 @@ def check_buy_signal(
         volume_ratio=indicators.volume_ratio,
         rsi=indicators.rsi,
         macd_histogram=indicators.macd.histogram,
-        macd_signal=indicators.macd.signal
+        macd_signal=indicators.macd.signal,
+        is_squeeze=indicators.bollinger.is_in_squeeze,
+        is_correction_trend=indicators.is_correction_trend
     )
 
     # Only count as buy signal if above threshold

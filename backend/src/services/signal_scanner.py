@@ -87,6 +87,7 @@ def _convert_indicators(result: TechnicalIndicatorsResult) -> TechnicalIndicator
             histogram=result.macd.histogram,
         ),
         volume_ratio=result.volume_ratio,
+        is_correction_trend=result.is_correction_trend,
         calculated_at=result.calculated_at,
     )
 
@@ -103,6 +104,9 @@ async def scan_for_buy_signals(
     macd_slow: int = 26,
     macd_signal: int = 9,
     volume_avg_period: int = 20,
+    trend_lookback_days: int = 20,
+    trend_below_ma_threshold: int = 15,
+    trend_ma_slope_lookback: int = 10,
     db_session: AsyncSession | None = None,
 ) -> ScanResult:
     """Scan KOSPI Top 100 for buy signals.
@@ -120,7 +124,12 @@ async def scan_for_buy_signals(
         macd_fast: MACD fast period
         macd_slow: MACD slow period
         macd_signal: MACD signal period
+        macd_slow: MACD slow period
+        macd_signal: MACD signal period
         volume_avg_period: Volume average period
+        trend_lookback_days: Trend lookback days
+        trend_below_ma_threshold: Days below MA threshold
+        trend_ma_slope_lookback: MA slope lookback days
         db_session: Database session for persistent caching
 
     Returns:
@@ -175,6 +184,9 @@ async def scan_for_buy_signals(
                 macd_slow=macd_slow,
                 macd_signal=macd_signal,
                 volume_avg_period=volume_avg_period,
+                trend_lookback_days=trend_lookback_days,
+                trend_below_ma_threshold=trend_below_ma_threshold,
+                trend_ma_slope_lookback=trend_ma_slope_lookback,
             )
             if indicators is None:
                 continue
@@ -238,6 +250,9 @@ async def get_stock_detail(
     macd_slow: int = 26,
     macd_signal: int = 9,
     volume_avg_period: int = 20,
+    trend_lookback_days: int = 20,
+    trend_below_ma_threshold: int = 15,
+    trend_ma_slope_lookback: int = 10,
     confidence_threshold: float = 55.0,
     db_session: AsyncSession | None = None,
 ) -> dict | None:
@@ -300,6 +315,9 @@ async def get_stock_detail(
             macd_slow=macd_slow,
             macd_signal=macd_signal,
             volume_avg_period=volume_avg_period,
+            trend_lookback_days=trend_lookback_days,
+            trend_below_ma_threshold=trend_below_ma_threshold,
+            trend_ma_slope_lookback=trend_ma_slope_lookback,
         )
         if indicators is None:
             return None

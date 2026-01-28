@@ -15,7 +15,7 @@ function App() {
   ];
 
   return (
-    <SessionGuard>
+    <SessionGuard skip={import.meta.env.DEV}>
       <BrowserRouter basename="/daily-focus">
         <div className="app-container">
           <Header

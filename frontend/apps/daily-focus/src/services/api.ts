@@ -54,6 +54,15 @@ export async function fetchRecommendations(
   if (settings?.bollingerStdDev !== undefined) {
     params.bollinger_std_dev = settings.bollingerStdDev;
   }
+  if (settings?.trendLookbackDays !== undefined) {
+    params.trend_lookback_days = settings.trendLookbackDays;
+  }
+  if (settings?.trendBelowMaThreshold !== undefined) {
+    params.trend_below_ma_threshold = settings.trendBelowMaThreshold;
+  }
+  if (settings?.trendMaSlopeLookback !== undefined) {
+    params.trend_ma_slope_lookback = settings.trendMaSlopeLookback;
+  }
 
   const response = await apiClient.get<RecommendationsResponse>(
     '/api/daily-focus/recommendations',

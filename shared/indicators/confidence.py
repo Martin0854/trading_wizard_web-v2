@@ -23,15 +23,26 @@ class ConfidenceScoreBreakdown:
     total: float  # 0-100 points
 
 
-def calculate_base_score() -> float:
+def calculate_base_score(is_squeeze: bool, is_correction_trend: bool) -> float:
     """Calculate base score for Bollinger breakout.
 
-    The base score is always 25 points when a breakout is detected.
+    Score Composition:
+    1. Breakout Bonus: 5 points (Always granted on breakout)
+    2. Squeeze & Trend Bonus: 20 points (Only if BOTH Squeeze and Correction Trend are True)
+
+    Args:
+        is_squeeze: Whether the stock is in a Bollinger Band squeeze status
+        is_correction_trend: Whether the stock was in a correction/downtrend before breakout
 
     Returns:
-        Base score (25.0)
+        Base score (5.0 or 25.0)
     """
-    return 25.0
+    score = 5.0
+    
+    if is_squeeze and is_correction_trend:
+        score += 20.0
+        
+    return score
 
 
 def calculate_volume_score(volume_ratio: float) -> float:
@@ -116,12 +127,14 @@ def calculate_confidence_score(
     volume_ratio: float,
     rsi: float,
     macd_histogram: float,
-    macd_signal: float
+    macd_signal: float,
+    is_squeeze: bool = False,
+    is_correction_trend: bool = False
 ) -> float:
     """Calculate total confidence score.
 
     Per TRADING_STRATEGY_ALGORITHM.md:
-    - Base: 25 points (Bollinger breakout)
+    - Base: 5 or 25 points (Bollinger breakout + Squeeze/Trend)
     - Volume: 0-25 points
     - RSI: 0-20 points
     - MACD: 0-30 points
@@ -132,11 +145,13 @@ def calculate_confidence_score(
         rsi: RSI value (0-100)
         macd_histogram: MACD histogram value
         macd_signal: MACD signal line value
+        is_squeeze: Whether stock is in squeeze
+        is_correction_trend: Whether stock is in correction trend
 
     Returns:
         Total confidence score (0-100)
     """
-    base = calculate_base_score()
+    base = calculate_base_score(is_squeeze, is_correction_trend)
     volume = calculate_volume_score(volume_ratio)
     rsi_score = calculate_rsi_score(rsi)
     macd = calculate_macd_score(macd_histogram, macd_signal)
@@ -148,7 +163,9 @@ def calculate_confidence_score_breakdown(
     volume_ratio: float,
     rsi: float,
     macd_histogram: float,
-    macd_signal: float
+    macd_signal: float,
+    is_squeeze: bool = False,
+    is_correction_trend: bool = False
 ) -> ConfidenceScoreBreakdown:
     """Calculate confidence score with component breakdown.
 
@@ -157,11 +174,13 @@ def calculate_confidence_score_breakdown(
         rsi: RSI value (0-100)
         macd_histogram: MACD histogram value
         macd_signal: MACD signal line value
+        is_squeeze: Whether stock is in squeeze
+        is_correction_trend: Whether stock is in correction trend
 
     Returns:
         ConfidenceScoreBreakdown with individual component scores
     """
-    base = calculate_base_score()
+    base = calculate_base_score(is_squeeze, is_correction_trend)
     volume = calculate_volume_score(volume_ratio)
     rsi_score = calculate_rsi_score(rsi)
     macd = calculate_macd_score(macd_histogram, macd_signal)
@@ -198,6 +217,11 @@ def generate_signal_reason(breakdown: ConfidenceScoreBreakdown) -> str:
         String describing the signal reason
     """
     reasons = ["볼린저 상단 돌파"]
+
+    # 기본 점수가 20점 이상이면(25점이면) 강력한 시그널임을 표시
+    if breakdown.base_score >= 20.0:
+        reasons.append("응축 후 반전")
+
 
     if breakdown.volume_score > 15:
         reasons.append("높은 거래량")

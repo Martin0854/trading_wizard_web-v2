@@ -75,6 +75,7 @@ class TechnicalIndicators:
     rsi: float  # 0-100
     macd: MACDIndicator
     volume_ratio: float  # Today's volume / 20-day average volume
+    is_correction_trend: bool  # True if in correction/downtrend
     calculated_at: datetime
 
 

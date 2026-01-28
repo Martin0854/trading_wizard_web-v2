@@ -5,7 +5,7 @@ GET /api/daily-focus/stock/{symbol} - Get detailed stock analysis
 
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -59,6 +59,12 @@ class StockDetailResponse(BaseModel):
 )
 async def get_stock_analysis(
     symbol: str = Path(..., description="Stock symbol (e.g., 005930.KS)"),
+    confidence_threshold: float = Query(55.0, ge=0, le=100, alias="confidence_threshold"),
+    bollinger_period: int = Query(12, ge=5, le=50, alias="bollinger_period"),
+    bollinger_std_dev: float = Query(1.3, ge=0.5, le=3.0, alias="bollinger_std_dev"),
+    trend_lookback_days: int = Query(20, ge=5, le=60, alias="trend_lookback_days"),
+    trend_below_ma_threshold: int = Query(15, ge=1, le=60, alias="trend_below_ma_threshold"),
+    trend_ma_slope_lookback: int = Query(10, ge=1, le=30, alias="trend_ma_slope_lookback"),
     db: AsyncSession = Depends(get_db),
 ) -> StockDetailResponse:
     """Get detailed technical analysis for a specific stock.
@@ -76,7 +82,16 @@ async def get_stock_analysis(
             },
         )
 
-    result = await get_stock_detail(symbol, db_session=db)
+    result = await get_stock_detail(
+        symbol,
+        confidence_threshold=confidence_threshold,
+        bollinger_period=bollinger_period,
+        bollinger_std_dev=bollinger_std_dev,
+        trend_lookback_days=trend_lookback_days,
+        trend_below_ma_threshold=trend_below_ma_threshold,
+        trend_ma_slope_lookback=trend_ma_slope_lookback,
+        db_session=db
+    )
 
     if result is None:
         raise HTTPException(
@@ -124,6 +139,7 @@ async def get_stock_analysis(
                 histogram=indicators.macd.histogram,
             ),
             volumeRatio=indicators.volume_ratio,
+            isCorrectionTrend=indicators.is_correction_trend,
             calculatedAt=indicators.calculated_at,
         ),
         recommendation=recommendation,

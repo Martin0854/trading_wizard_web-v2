@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockDetail } from '../services/api';
 import { LoadingSpinner, ErrorMessage } from '@trading-wizard/shared-ui';
+import ScoreBreakdown from './ScoreBreakdown';
 import './StockDetailModal.css';
 
 interface StockDetailModalProps {
@@ -103,6 +104,12 @@ function StockDetailModal({ symbol, onClose }: StockDetailModalProps) {
               </div>
             )}
 
+            {data.recommendation && (
+              <ScoreBreakdown
+                indicators={data.indicators}
+              />
+            )}
+
             <div className="indicators-section">
               <h3>기술적 지표</h3>
 
@@ -136,11 +143,10 @@ function StockDetailModal({ symbol, onClose }: StockDetailModalProps) {
                   <div className="indicator-item">
                     <span className="label">상태</span>
                     <span
-                      className={`value status ${
-                        data.indicators.bollinger.isExpanding
-                          ? 'expanding'
-                          : 'squeezing'
-                      }`}
+                      className={`value status ${data.indicators.bollinger.isExpanding
+                        ? 'expanding'
+                        : 'squeezing'
+                        }`}
                     >
                       {data.indicators.bollinger.isInSqueeze
                         ? '스퀴즈'
@@ -186,11 +192,10 @@ function StockDetailModal({ symbol, onClose }: StockDetailModalProps) {
                   <div className="indicator-item">
                     <span className="label">히스토그램</span>
                     <span
-                      className={`value ${
-                        data.indicators.macd.histogram > 0
-                          ? 'positive'
-                          : 'negative'
-                      }`}
+                      className={`value ${data.indicators.macd.histogram > 0
+                        ? 'positive'
+                        : 'negative'
+                        }`}
                     >
                       {data.indicators.macd.histogram.toFixed(2)}
                     </span>
@@ -204,9 +209,8 @@ function StockDetailModal({ symbol, onClose }: StockDetailModalProps) {
                   <div className="indicator-item">
                     <span className="label">거래량 비율</span>
                     <span
-                      className={`value ${
-                        data.indicators.volumeRatio >= 1.5 ? 'highlight' : ''
-                      }`}
+                      className={`value ${data.indicators.volumeRatio >= 1.5 ? 'highlight' : ''
+                        }`}
                     >
                       {data.indicators.volumeRatio.toFixed(2)}x
                     </span>

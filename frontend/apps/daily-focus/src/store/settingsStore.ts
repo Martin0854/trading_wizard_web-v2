@@ -14,6 +14,9 @@ const DEFAULT_SETTINGS: DailyFocusSettings = {
   macdSlow: 26,
   macdSignal: 9,
   volumeAvgPeriod: 20,
+  trendLookbackDays: 20,
+  trendBelowMaThreshold: 15,
+  trendMaSlopeLookback: 10,
 };
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';

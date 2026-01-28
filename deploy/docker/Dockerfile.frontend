@@ -8,16 +8,11 @@ FROM node:20-alpine AS builder
 ARG APP_NAME
 
 # Build-time environment variables for Vite
-ARG VITE_PORTAL_URL=https://trading.kalee-dc.click
-ARG VITE_DAILY_FOCUS_URL=https://trading.kalee-dc.click/daily-focus
-ARG VITE_PORTFOLIO_URL=https://trading.kalee-dc.click/portfolio
-ARG VITE_API_URL=https://trading.kalee-dc.click
-
-# Set environment variables for Vite build
-ENV VITE_PORTAL_URL=$VITE_PORTAL_URL
-ENV VITE_DAILY_FOCUS_URL=$VITE_DAILY_FOCUS_URL
-ENV VITE_PORTFOLIO_URL=$VITE_PORTFOLIO_URL
-ENV VITE_API_URL=$VITE_API_URL
+# Use placeholders that will be replaced at container startup
+ENV VITE_PORTAL_URL=__VITE_PORTAL_URL__
+ENV VITE_DAILY_FOCUS_URL=__VITE_DAILY_FOCUS_URL__
+ENV VITE_PORTFOLIO_URL=__VITE_PORTFOLIO_URL__
+ENV VITE_API_URL=__VITE_API_URL__
 
 WORKDIR /app
 
@@ -63,6 +58,10 @@ RUN if [ -f /tmp/nginx-${APP_NAME}.conf ]; then \
 # Copy built files
 COPY --from=builder /app/frontend/apps/${APP_NAME}/dist /usr/share/nginx/html
 
+# Copy entrypoint script for runtime env var injection
+COPY deploy/docker/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

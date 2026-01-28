@@ -17,9 +17,12 @@ spec:
     spec:
       containers:
         - name: portal
-          image: splkm97/trading-wizard-portal:a6430ff
+          image: splkm97/trading-wizard-portal:a691754
           ports:
             - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: trading-wizard-config
           resources:
             requests:
               memory: "64Mi"
